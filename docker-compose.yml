@@ -1,0 +1,24 @@
+version: "0.2"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    networks:
+      - lucent-net
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    networks:
+      - lucent-net
+    depends_on:
+      - backend
+
+networks:
+  lucent-net:
+    driver: bridge

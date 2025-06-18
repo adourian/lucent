@@ -9,10 +9,11 @@ Lucent is an AI-powered platform that gives investors, biotech executives, and a
 ## 🚀 Features (MVP v1)
 
 - 🔎 **NCTID Lookup:** Instantly fetch and validate clinical trial data from ClinicalTrials.gov
-- 🧠 **ML Prediction:** Return an AI-driven probability of trial success
-- 📦 **Containerized Backend:** FastAPI API, fully Dockerized for reproducible deployment
-- ✅ **Automated Tests:** Pytest for endpoints and core logic
-- 🗂️ **Clean, Modular Structure:** Scalable and professional codebase
+- 🧠 **ML Prediction:** Return an AI-driven probability of trial success, including uncertainty via Monte Carlo Dropout
+- 🌐 **Frontend UI:** React + Vite interface for users to query trials
+- ⚙️ **FastAPI Backend:** Modular, testable API layer with clear separation of concerns
+- ✅ **Automated Tests:** Full unit and integration test coverage with `pytest`
+- 📦 **Containerized:** Docker-ready backend for deployment or local testing
 
 ---
 
@@ -20,64 +21,89 @@ Lucent is an AI-powered platform that gives investors, biotech executives, and a
 
 ```
 lucent/
+|
+├── backend/
+│   ├── app/
+│   │   ├── main.py                 # FastAPI entrypoint
+│   │   ├── core/                   # Parsing, preprocessing, prediction logic
+│   │   ├── models/                 # ML model definition and loading
+│   │   └── services/               # ClinicalTrials.gov API fetch
+│   ├── tests/                      # Unit & integration tests
+│   ├── requirements.txt            # Python dependencies
 │
-├── app/
-│   ├── main.py          # FastAPI entrypoint
-│   ├── api/             # API routes
-│   ├── services/        # Business logic (data fetching, prediction)
-│   ├── models/          # ML model loading/inference
-│   └── core/            # Config/utilities
+├── frontend/
+│   ├── src/                        # React + Vite frontend
+│   ├── public/                     # Static assets
+│   └── ...
 │
-├── tests/               # Unit/integration tests
-├── Dockerfile           # Container setup
-├── requirements.txt     # Python deps
-├── .gitignore
 ├── README.md
-└── scripts/             # For setup, data/model management
+└── Dockerfile
 ```
 
 **Flow:**
-1. User submits an NCTID via the `/predict` endpoint.
+1. User enters an NCTID via the frontend or `/predict` endpoint.
 2. Backend fetches trial data from ClinicalTrials.gov.
-3. Data is preprocessed, then run through the trained ML model.
-4. API returns predicted success probability (+ confidence, if available).
+3. Data is parsed, preprocessed, and embedded.
+4. A trained multi-modal neural network returns a success probability and uncertainty.
 
 ---
 
-## 🏁 Quickstart
+## 🧪 Local Development Setup
 
-```bash
-# Clone and enter repo
-git clone https://github.com/adourian/lucent.git
-cd lucent
+### 1. Set up Python backend
 
-# Build Docker image
-docker build -t lucent-app .
+\`\`\`bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate        # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+\`\`\`
 
-# Run container
-docker run -p 8000:8000 lucent-app
+### 2. Set up Node.js frontend
 
-# The API will be available at http://localhost:8000/docs
-```
+\`\`\`bash
+cd ../frontend
+npm install
+\`\`\`
+
+### 3. Run the application (in two terminals)
+
+**Terminal 1: Backend**
+\`\`\`bash
+cd backend
+source .venv/bin/activate
+uvicorn app.main:app --reload
+\`\`\`
+
+**Terminal 2: Frontend**
+\`\`\`bash
+cd frontend
+npm run dev
+\`\`\`
+
+- Backend API: http://localhost:8000/docs  
+- Frontend UI: http://localhost:5173
 
 ---
 
 ## 🧪 Testing
 
-```bash
+\`\`\`bash
+cd backend
 pytest tests/
-```
+\`\`\`
 
 ---
 
 ## 🚦 Roadmap
 
-- [x] Backend MVP: FastAPI + Docker + CI-ready
-- [ ] ML model integration and artifact management
-- [ ] Frontend (React) UI for end-users
-- [ ] Model interpretability and confidence metrics
-- [ ] Bulk/portfolio analysis mode
-- [ ] User authentication and saved analyses
+- [x] Backend MVP with prediction model
+- [x] ML pipeline with Monte Carlo Dropout
+- [x] Frontend React UI
+- [x] Unit & integration test coverage
+- [ ] Dockerization for backend + frontend
+- [ ] Live deployment (Render / Vercel / Railway)
+- [ ] Interpretability tools and user analytics
 
 ---
 
