@@ -1,6 +1,6 @@
 # Lucent
 
-**Clarity in Clinical Trials. Confidence in Every Decision.**
+**Clinical Trials Intelligence**
 
 Lucent is an AI-powered platform that gives investors, biotech executives, and analysts instant, data-driven predictions on the probability of success for clinical trials. Enter a ClinicalTrials.gov NCTID and get a predictive insight—so you can make smarter, faster decisions in a complex industry.
 
