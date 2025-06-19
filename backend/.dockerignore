@@ -1,0 +1,17 @@
+# Exclude Python virtual environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Exclude local development and editor files
+.git/
+.gitignore
+.DS_Store
+.vscode/
+*.env* 
+
+# Exclude frontend specific files if they somehow got in the backend context
+node_modules/
+dist/
+build/

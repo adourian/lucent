@@ -1,0 +1,15 @@
+node_modules/
+
+# Exclude build output if not needed in the build context
+dist/
+build/
+
+# Exclude local development and editor files
+.git/
+.gitignore
+.DS_Store
+.vscode/
+*.env* # If you use .env files that shouldn't be copied
+
+# Exclude backend specific files
+backend/

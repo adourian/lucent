@@ -1,14 +1,15 @@
-version: "3.8"
+version: "0.1"
 
 services:
   backend:
     build:
       context: ./backend
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:8000"
     environment:
       - ENV=production
-      - CORS_ORIGINS=http://localhost:3000
+      - PORT=8000
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
     networks:
       - lucent-net
     restart: unless-stopped
@@ -17,9 +18,9 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE: http://localhost:8000  # For local docker-compose
+        VITE_API_BASE: ${VITE_API_BASE:-http://localhost:8000}
     ports:
-      - "3000:80"
+      - "${FRONTEND_PORT:-3000}:80"
     networks:
       - lucent-net
     depends_on:
