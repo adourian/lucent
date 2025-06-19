@@ -1,6 +1,6 @@
+import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-
 
 from app.core.parsing import parse_trial_json
 from app.core.preprocessing import preprocess_trial
@@ -16,13 +16,31 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# Environment-based CORS configuration
+ENV = os.getenv("ENV", "development")
 
-# CORS setup to allow frontend (React) to communicate with this API
+if ENV == "production":
+    allowed_origins = [
+        "to_fill_later",
+        "to_fill_later",
+        # Add other production domains here
+    ]
+else:
+    # Development - allow localhost
+    allowed_origins = [
+        "http://localhost:3000",
+        "http://localhost:5173",  # Vite dev server
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+    ]
+
+print(f"Running in {ENV} mode with CORS origins: {allowed_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 

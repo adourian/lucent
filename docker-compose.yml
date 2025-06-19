@@ -12,6 +12,8 @@ services:
   frontend:
     build:
       context: ./frontend
+    args:
+        VITE_API_BASE: http://backend:8000
     ports:
       - "3000:80"
     networks:

@@ -241,7 +241,7 @@ function App() {
                         ) : (
                           <div className="flex items-center justify-center space-x-3">
                             <Award className="w-5 h-5" />
-                            <span className="font-medium">Generate Investment Analysis</span>
+                            <span className="font-medium">Generate Analysis</span>
                           </div>
                         )}
                       </button>
@@ -270,7 +270,7 @@ function App() {
                                 <Target className="w-6 h-6 text-white" />
                               </div>
                               <h3 className="text-2xl font-bold text-slate-900">
-                                Investment Analysis Results
+                                Analysis Results
                               </h3>
                             </div>
                             <div className="flex items-center space-x-2 text-sm text-slate-600 bg-white px-4 py-2 rounded-full shadow-sm">
@@ -471,7 +471,7 @@ function App() {
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="flex flex-col md:flex-row items-center justify-between">
                   <div className="text-sm text-slate-600 font-medium text-center md:text-left mb-4 md:mb-0">
-                    Professional-grade clinical trial intelligence for biotech investment decisions
+                    Clinical trial intelligence for biotech investment decisions
                   </div>
                   <div className="flex items-center space-x-6 text-sm text-slate-500">
                     <span className="font-medium">© 2025 Lucent Platform</span>
