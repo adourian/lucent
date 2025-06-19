@@ -29,4 +29,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:$PORT/docs || exit 1
 
 # Run app: Use the $PORT environment variable provided by Render
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$PORT"]
+CMD ["/bin/bash", "-c", "ls -R /app && sleep 3600"]
+
