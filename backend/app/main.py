@@ -20,11 +20,9 @@ app = FastAPI(
 ENV = os.getenv("ENV", "development")
 
 if ENV == "production":
-    allowed_origins = [
-        "to_fill_later",
-        "to_fill_later",
-        # Add other production domains here
-    ]
+    cors_origins_env = os.getenv("CORS_ORIGINS", "")
+    allowed_origins = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
+        
 else:
     # Development - allow localhost
     allowed_origins = [
