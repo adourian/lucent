@@ -28,6 +28,7 @@ function App() {
     probability: number;
     uncertainty: number;
     nctid: string;
+    phase: string;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -61,6 +62,7 @@ function App() {
         probability: data.deterministic,
         uncertainty: data.uncertainty,
         nctid: data.nctid,
+        phase: data.phase,
       };
       setResult(newResult);
 
@@ -328,19 +330,19 @@ function App() {
                               </div>
                             </div>
 
-                            {/* Model Confidence */}
+                            {/* Trial Phase */}
                             <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
                               <div className="flex items-center justify-between mb-4">
                                 <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-                                  Model Accuracy
+                                  Trial Phase
                                 </span>
-                                <Database className="w-4 h-4 text-slate-400" />
+                                <Beaker className="w-4 h-4 text-slate-400" />
                               </div>
-                              <div className="text-3xl font-bold text-blue-600 mb-2">
-                                {modelStats.accuracy}
+                              <div className="text-lg font-bold text-slate-900 capitalize">
+                                {result.phase || "N/A"}
                               </div>
                               <div className="text-xs text-slate-500 font-medium">
-                                Validation Accuracy
+                                Clinical development stage
                               </div>
                             </div>
                           </div>
@@ -373,12 +375,12 @@ function App() {
                   <div className="bg-white rounded-3xl shadow-xl border border-slate-200/50 p-6">
                     <h3 className="font-bold text-slate-900 mb-6 flex items-center">
                       <Database className="w-5 h-5 mr-3 text-blue-600" />
-                      Model Performance
+                      Model Information
                     </h3>
                     <div className="space-y-4">
                       <div className="flex justify-between items-center py-2">
-                        <span className="text-sm font-medium text-slate-600">Accuracy</span>
-                        <span className="font-bold text-emerald-600 text-lg">{modelStats.accuracy}</span>
+                        <span className="text-sm font-medium text-slate-600">Universal</span>
+                        <span className="font-bold text-emerald-600">Any NCTID</span>
                       </div>
                       <div className="flex justify-between items-center py-2">
                         <span className="text-sm font-medium text-slate-600">Training Data</span>

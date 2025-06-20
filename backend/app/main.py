@@ -50,6 +50,6 @@ def predict_trial(nctid: str):
         prepped = preprocess_trial(parsed)
         result = predictor.predict_with_uncertainty(prepped, n_samples=1000)
         print(f"[Lucent] {nctid} | Deterministic: {result['deterministic']} | MC: {result['probability']} ± {result['uncertainty']}")
-        return {"nctid": nctid, **result}
+        return {"nctid": nctid, "phase": prepped["phase"] ,**result}
     except Exception as e:
         return {"error": str(e)}
