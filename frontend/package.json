@@ -7,10 +7,10 @@
     "node": "20.x"
   },
   "scripts": {
-    "dev": "node ./node_modules/vite/bin/vite.js",
+    "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint .",
     "preview": "vite preview",
+    "postinstall": "rm -f node_modules/rollup/dist/native.js"
   },
   "dependencies": {
     "lucide-react": "^0.511.0",
