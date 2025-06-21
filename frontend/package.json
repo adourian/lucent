@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "postinstall": "rm -f node_modules/rollup/dist/native.js"
+    "postinstall": "rm -f node_modules/rollup/dist/native.js || true"
   },
   "dependencies": {
     "lucide-react": "^0.511.0",
