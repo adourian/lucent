@@ -12,6 +12,9 @@
     "preview": "vite preview",
     "postinstall": "rm -f node_modules/rollup/dist/native.js || true"
   },
+  “overrides”: {
+    “rollup”: “3.29.4”
+  },
   "dependencies": {
     "lucide-react": "^0.511.0",
     "react": "^19.1.0",
