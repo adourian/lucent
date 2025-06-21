@@ -11,8 +11,6 @@
     "build": "tsc && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "preinstall": "npm config set optional false",
-    "postinstall": "rm -f node_modules/rollup/dist/native.js"
   },
   "dependencies": {
     "lucide-react": "^0.511.0",
