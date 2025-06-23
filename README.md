@@ -6,16 +6,6 @@ Lucent is an AI-powered platform that gives investors, biotech executives, and a
 
 ---
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/<user>/lucent/main/frontend/public/logo.svg" width="120" />
-</p>
-
-<h3 align="center">Lucent – Clinical Trials Intelligence</h3>
-<p align="center">
-  AI-powered probability forecasts for every <code>NCTID</code><br/>
-  <a href="https://lucent-self.vercel.app/">Live demo</a> • <a href="#quickstart">Quick-start</a> • <a href="#architecture">Architecture</a>
-</p>
-
 ## 🚀 Features (MVP v1)
 
 - **Instant NCTID lookup** – pulls latest study JSON from ClinicalTrials.gov  
