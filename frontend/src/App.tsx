@@ -29,6 +29,7 @@ function App() {
     uncertainty: number;
     nctid: string;
     phase: string;
+    sponsor: string | null;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -63,6 +64,7 @@ function App() {
         uncertainty: data.uncertainty,
         nctid: data.nctid,
         phase: data.phase,
+        sponsor: data.sponsor || "N/A",
       };
       setResult(newResult);
 
@@ -314,19 +316,19 @@ function App() {
                               </div>
                             </div>
 
-                            {/* Risk Assessment */}
+                            {/* Sponsor Name  */}
                             <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
                               <div className="flex items-center justify-between mb-4">
                                 <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-                                  Risk Category
+                                  Sponsor
                                 </span>
-                                <Shield className="w-4 h-4 text-slate-400" />
+                                <Building2 className="w-4 h-4 text-slate-400" />
                               </div>
-                              <div className={`text-lg font-bold ${getRiskLevel(result.probability).color} mb-2`}>
-                                {getRiskLevel(result.probability).level}
+                              <div className="text-sm font-bold text-slate-900 break-words">
+                                {result.sponsor}
                               </div>
-                              <div className="text-xs text-slate-500 font-medium">
-                                {getRiskLevel(result.probability).confidence} Confidence
+                              <div className="text-xs text-slate-500 font-medium mt-2">
+                                Trial owner
                               </div>
                             </div>
 
@@ -341,7 +343,7 @@ function App() {
                               <div className="text-lg font-bold text-slate-900 capitalize">
                                 {result.phase || "N/A"}
                               </div>
-                              <div className="text-xs text-slate-500 font-medium">
+                              <div className="text-xs text-slate-500 font-medium mt-2">
                                 Clinical development stage
                               </div>
                             </div>

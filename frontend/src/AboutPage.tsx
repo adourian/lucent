@@ -116,8 +116,8 @@ const AboutPage = ({ modelStats }: AboutPageProps) => {
               <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
                 <h4 className="font-bold text-slate-900 mb-3">Structured Data</h4>
                 <ul className="text-slate-700 space-y-2">
-                  <li>• Sponsor embeddings via MedBERT</li>
-                  <li>• Disease classification with ChemBERTa</li>
+                  <li>• Sponsor embeddings via all-MiniLM-L6-v2</li>
+                  <li>• Diseases embeddings via MedBERT</li>
                   <li>• Trial phase one-hot encoding</li>
                 </ul>
               </div>
@@ -126,8 +126,7 @@ const AboutPage = ({ modelStats }: AboutPageProps) => {
                 <h4 className="font-bold text-slate-900 mb-3">Unstructured Text</h4>
                 <ul className="text-slate-700 space-y-2">
                   <li>• Eligibility criteria via BioSimCSE</li>
-                  <li>• Protocol summaries encoded</li>
-                  <li>• Contextual embeddings preserved</li>
+                  <li>• Trial Protocol summaries via BioSimCSE</li>
                 </ul>
               </div>
               
@@ -136,7 +135,6 @@ const AboutPage = ({ modelStats }: AboutPageProps) => {
                 <ul className="text-slate-700 space-y-2">
                   <li>• Multi-modal representation learning</li>
                   <li>• Attention-based feature weighting</li>
-                  <li>• Dimensional consistency enforcement</li>
                 </ul>
               </div>
             </div>
