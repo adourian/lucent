@@ -1,5 +1,12 @@
 # Lucent
 
+[![Build](https://github.com/adourian/lucent/actions/workflows/ci.yml/badge.svg)](https://github.com/adourian/lucent/actions)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue)
+
+**👉 Live demo:** https://lucent-self.vercel.app
+
 **Clinical Trials Intelligence**
 
 Lucent is an AI-powered platform that gives investors, biotech executives, and analysts instant, data-driven predictions on the probability of success for clinical trials. Enter a ClinicalTrials.gov NCTID and get a predictive insight—so you can make smarter, faster decisions in a complex industry.
