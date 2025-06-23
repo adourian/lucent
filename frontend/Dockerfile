@@ -14,7 +14,7 @@ RUN npm cache clean --force && \
     rm -rf node_modules && \
     rm -f package-lock.json && \
     npm install && \
-    npm update rollup
+    npm install lightningcss
 
 # Copy source and build
 COPY . .
