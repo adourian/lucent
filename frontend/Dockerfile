@@ -13,7 +13,8 @@ COPY package*.json ./
 RUN npm cache clean --force && \
     rm -rf node_modules && \
     rm -f package-lock.json && \
-    npm install
+    npm install && \
+    npm install lightningcss-linux-x64-gnu
 
 # Copy source and build
 COPY . .
