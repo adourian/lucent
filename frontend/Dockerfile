@@ -1,39 +1,34 @@
-# Build stage
-FROM node:20 AS build
+FROM node:24.1-bookworm-slim
 
-ARG VITE_API_BASE=http://localhost:8000
-ENV VITE_API_BASE=$VITE_API_BASE
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+ENV NODE_ENV=production
 
-# Force complete clean install - this usually fixes native binary issues
-RUN npm cache clean --force && \
-    rm -rf node_modules && \
-    rm -f package-lock.json && \
-    npm install && \
-    npm install lightningcss-linux-x64-gnu
+ARG VITE_API_BASE
 
-# Copy source and build
-COPY . .
-RUN npm run build
+ENV VITE_API_BASE=${VITE_API_BASE}
 
-# Production nginx stage  
-FROM nginx:stable-alpine
+# ref: https://pnpm.io/docker
+ENV PNPM_HOME=/pnpm
 
-COPY --from=build /app/dist /usr/share/nginx/html
+ENV PATH="$PNPM_HOME:$PATH"
 
-# Simple nginx config for SPA
-RUN echo 'server { \
-    listen 80; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
+RUN corepack enable
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+COPY ./ /app/
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+RUN pnpm run build
+
+RUN pnpm prune --prod
+
+RUN pnpm add -g serve && pnpm cache delete && pnpm store prune
+
+CMD ["serve", "-s", "dist", "-l", "80"]
