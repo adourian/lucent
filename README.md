@@ -60,6 +60,19 @@ lucent/
 
 ## 🏁 Local Development Setup
 
+<details>
+<summary><strong>Model card (v0.2.0)</strong></summary>
+
+| Metric | Value |
+|--------|-------|
+| Training set | 17 000 trials (NCTs) |
+| Data cutoff | Q1 2023 |
+| Val. accuracy | **70 %** (macro) |
+| Monte-Carlo σ | ~0.09 |
+
+</details>
+
+
 ### **Option 1 — Docker (one-command stack)**  
 ```bash
 git clone https://github.com/adourian/lucent.git
