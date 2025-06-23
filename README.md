@@ -86,15 +86,6 @@ Open two terminals (one for each command set) and you’ll have a hot-reloading 
 
 ---
 
-## 🧪 Testing
-
-\`\`\`bash
-cd backend
-pytest tests/
-\`\`\`
-
----
-
 ## 📄 License
 
 MIT
