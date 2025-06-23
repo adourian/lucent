@@ -65,8 +65,7 @@ lucent/
 
 | Metric | Value |
 |--------|-------|
-| Training set | 17 000 trials (NCTs) |
-| Data cutoff | Q1 2023 |
+| Training set | 17 500 trials (NCTs) |
 | Val. accuracy | **70 %** (macro) |
 | Monte-Carlo σ | ~0.09 |
 
