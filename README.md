@@ -47,41 +47,39 @@ lucent/
 
 ---
 
-## 🧪 Local Development Setup
 
-### 1. Set up Python backend
+## 🏁 Local Development Setup
 
-\`\`\`bash
+### **Option 1 — Docker (one-command stack)**  
+```bash
+git clone https://github.com/adourian/lucent.git
+cd lucent
+docker compose up --build
+```
+* API docs → <http://localhost:8000/docs>  
+* Front-end UI → <http://localhost:3000>
+
+---
+
+### **Option 2 — Run services manually**
+
+#### Back-end (FastAPI)  
+```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate        # On Windows: .venv\Scripts\activate
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-\`\`\`
+uvicorn app.main:app --reload  # http://localhost:8000/docs
+```
 
-### 2. Set up Node.js frontend
-
-\`\`\`bash
-cd ../frontend
-npm install
-\`\`\`
-
-### 3. Run the application (in two terminals)
-
-**Terminal 1: Backend**
-\`\`\`bash
-cd backend
-source .venv/bin/activate
-uvicorn app.main:app --reload
-\`\`\`
-
-**Terminal 2: Frontend**
-\`\`\`bash
+#### Front-end (React + Vite)  
+```bash
 cd frontend
-npm run dev
-\`\`\`
+npm install
+npm run dev                    # http://localhost:5173
+```
 
-- Backend API: http://localhost:8000/docs  
-- Frontend UI: http://localhost:5173
+Open two terminals (one for each command set) and you’ll have a hot-reloading dev stack running locally.
 
 ---
 
@@ -91,18 +89,6 @@ npm run dev
 cd backend
 pytest tests/
 \`\`\`
-
----
-
-## 🚦 Roadmap
-
-- [x] Backend MVP with prediction model
-- [x] ML pipeline with Monte Carlo Dropout
-- [x] Frontend React UI
-- [x] Unit & integration test coverage
-- [ ] Dockerization for backend + frontend
-- [ ] Live deployment (Render / Vercel / Railway)
-- [ ] Interpretability tools and user analytics
 
 ---
 
