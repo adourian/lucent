@@ -13,13 +13,13 @@ Lucent is an AI-powered platform that gives investors, biotech executives, and a
 
 ---
 
-## 🚀 Features (MVP v1)
+## 🚀 Features
 
-- **Instant NCTID lookup** – pulls latest study JSON from ClinicalTrials.gov  
-- **Multi-modal ML prediction** – success probability *plus* Monte-Carlo uncertainty  
-- **React + Vite UI** – clean, mobile-responsive interface  
-- **FastAPI micro-service** – typed and fully tested  
-- **One-command Docker** – `docker compose up --build` boots both services
+- ⚡ **Pulls** study JSON instantly from ClinicalTrials.gov  
+- 🧠 **Predicts** success probability **+** MC-dropout uncertainty  
+- 💻 **Displays** in a clean React + Vite UI (mobile-responsive)  
+- 🔌 **Serves** via FastAPI with type hints & PyTest coverage  
+- 🐳 **Runs** end-to-end with a single `docker compose up --build`
 
 ---
 
