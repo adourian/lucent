@@ -29,14 +29,17 @@ lucent/
 │   │   └── services/               # ClinicalTrials.gov API fetch
 │   ├── tests/                      # Unit & integration tests
 │   ├── requirements.txt            # Python dependencies
+|   ├── Dockerfile
+│   └── ...
 │
 ├── frontend/
 │   ├── src/                        # React + Vite frontend
 │   ├── public/                     # Static assets
+|   ├── Dockerfile
 │   └── ...
 │
 ├── README.md
-└── Dockerfile
+└── docker-compose.yml
 ```
 
 **Flow:**
