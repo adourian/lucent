@@ -1,6 +1,7 @@
 # Lucent
 
 [![Build](https://github.com/adourian/lucent/actions/workflows/ci.yml/badge.svg)](https://github.com/adourian/lucent/actions)
+[![Docker Pulls](https://img.shields.io/docker/pulls/adourian/lucent-backend?style=for-the-badge)](https://hub.docker.com/r/adourian/lucent-backend)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
