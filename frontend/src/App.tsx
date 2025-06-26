@@ -38,7 +38,7 @@ function App() {
   >([]);
 
   const [modelStats] = useState({
-    avgProcessingTime: 10,
+    avgProcessingTime: 20,
     modelVersion: "0.2.0",
     lastUpdated: "June 2025",
     datasetSize: "17K+ trials",
