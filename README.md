@@ -73,7 +73,7 @@ lucent/
 </details>
 
 
-### **Option 1 — Docker (one-command stack)**  
+### **Option 1 — Docker**  
 ```bash
 git clone https://github.com/adourian/lucent.git
 cd lucent
