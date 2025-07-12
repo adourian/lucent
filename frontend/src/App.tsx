@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { sponsorToTicker } from "./sponsor_to_tickr";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import {
   TrendingUp,
   Shield,
@@ -24,6 +25,14 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import AboutPage from "./AboutPage"; // Import the new AboutPage component
 
 function App() {
+  // State variables for stock data and analysis
+  const [stockData, setStockData] = useState<{ date: string; close: number }[] | null>(null);
+  const [stockRange, setStockRange] = useState("6mo");
+  const [stockError, setStockError] = useState<string | null>(null);
+  const [currentTicker, setCurrentTicker] = useState<string | null>(null);
+  const [stockLoading, setStockLoading] = useState(false);
+
+  // State variables for analysis input and results
   const [nctid, setNctid] = useState("");
   const [result, setResult] = useState<{
     probability: number;
@@ -45,6 +54,34 @@ function App() {
     datasetSize: "17K+ trials",
     accuracy: "70%",
   });
+
+  useEffect(() => {
+  const fetchStockData = async () => {
+    if (!currentTicker) return;
+
+    setStockLoading(true);
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE}/finance/${currentTicker}?range=${stockRange}&interval=1d`);
+      const finance = await res.json();
+      if (finance.prices && finance.prices.length > 0) {
+        setStockData(finance.prices);
+        setStockError(null);
+      } else {
+        setStockData(null);
+        setStockError("No price data available");
+      }
+    } catch (err) {
+      console.error("Stock fetch error:", err);
+      setStockData(null);
+      setStockError("Error loading stock data");
+    } finally {
+      setStockLoading(false);
+    }
+  };
+
+  fetchStockData();
+}, [stockRange, currentTicker]);
 
   const handleSubmit = async () => {
     if (!nctid.trim()) return;
@@ -68,6 +105,29 @@ function App() {
         sponsor: data.sponsor || "N/A",
       };
       setResult(newResult);
+
+      const ticker = getTicker(data.sponsor);
+      setCurrentTicker(ticker);
+      if (ticker) {
+        try {
+          const res = await fetch(`${import.meta.env.VITE_API_BASE}/finance/${ticker}?range=${stockRange}&interval=1d`);
+          const finance = await res.json();
+          if (finance.prices && finance.prices.length > 0) {
+            setStockData(finance.prices);
+            setStockError(null);
+          } else {
+            setStockData(null);
+            setStockError("No price data available");
+          }
+        } catch (err) {
+          console.error("Stock fetch error:", err);
+          setStockData(null);
+          setStockError("Error loading stock data");
+        }
+      } else {
+        setStockData(null);
+        setStockError("No data available");
+      }
 
       const newPrediction = {
         nctid: data.nctid,
@@ -219,11 +279,16 @@ function App() {
                     <div className="space-y-8">
                       {/* Enhanced Input Section */}
                       <div className="bg-slate-50 rounded-2xl p-6">
-                        <label
-                          htmlFor="nctid-input"
-                          className="block text-sm font-semibold text-slate-700 mb-3"
-                        >
-                          Clinical Trial Identifier
+                        <label htmlFor="nctid-input" className="block text-sm font-semibold text-slate-700 mb-3 flex items-center space-x-2">
+                          <span>Clinical Trial Identifier</span>
+                          <div className="relative group">
+                            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-300 text-white text-[10px] font-bold leading-none cursor-pointer">
+                              ?
+                            </span>
+                            <div className="absolute left-5 top-1/2 transform -translate-y-1/2 ml-2 w-64 p-3 bg-white border border-slate-200 shadow-lg rounded-xl text-xs text-slate-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
+                              An NCTID (e.g., NCT01721746) is a unique identifier for clinical trials registered at <a href="https://clinicaltrials.gov/" target="_blank" className="text-blue-600 underline">ClinicalTrials.gov</a>.
+                            </div>
+                          </div>
                         </label>
                         <div className="relative">
                           <input
@@ -376,7 +441,7 @@ function App() {
                             </div>
                           </div>
 
-                          {/* Ticker Display (NEW!) */}
+                          {/* Ticker Display */}
                           {getTicker(result.sponsor) && (
                             <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-200 mt-6">
                               <div className="flex items-center justify-between mb-2">
@@ -391,6 +456,38 @@ function App() {
                               <div className="text-xs text-slate-500 font-medium">
                                 Equity market symbol for sponsor
                               </div>
+                            </div>
+                          )}
+                          {getTicker(result.sponsor) && (
+                            <div className="bg-white rounded-2xl p-6 shadow-lg border border-indigo-200 mt-6">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
+                                  Stock Price Chart
+                                </span>
+                                <select
+                                  value={stockRange}
+                                  onChange={(e) => setStockRange(e.target.value)}
+                                  disabled={stockLoading}
+                                  className="text-sm border border-slate-300 rounded-lg px-2 py-1"
+                                >
+                                  {["1mo", "3mo", "6mo", "1y", "5y"].map((r) => (
+                                    <option key={r} value={r}>{r}</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              {stockData ? (
+                                <ResponsiveContainer width="100%" height={200}>
+                                  <LineChart data={stockData}>
+                                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                                    <YAxis tick={{ fontSize: 10 }} domain={["auto", "auto"]} />
+                                    <Tooltip />
+                                    <Line type="monotone" dataKey="close" stroke="#6366F1" strokeWidth={2} dot={false} />
+                                  </LineChart>
+                                </ResponsiveContainer>
+                              ) : (
+                                <p className="text-xs text-slate-500 mt-2">{stockError}</p>
+                              )}
                             </div>
                           )}
                         </div>

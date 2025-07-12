@@ -1,6 +1,10 @@
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import yfinance as yf
+from typing import Literal
+
+
 
 from app.core.parsing import parse_trial_json
 from app.core.preprocessing import preprocess_trial
@@ -53,3 +57,35 @@ def predict_trial(nctid: str):
         return {"nctid": nctid, "phase": prepped["phase"], "sponsor": prepped["sponsor"],**result}
     except Exception as e:
         return {"error": str(e)}
+    
+
+@app.get("/finance/{ticker}")
+def get_stock_data(
+    ticker: str,
+    range: Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"] = Query("1mo"),
+    interval: Literal["1m", "5m", "15m", "30m", "1h", "1d", "1wk", "1mo", "3mo"] = Query("1d")
+):
+    try:
+        ticker_obj = yf.Ticker(ticker)
+        hist = ticker_obj.history(period=range, interval=interval)
+
+        # Explicit empty data check for 404
+        if hist.empty:
+            raise HTTPException(status_code=404, detail=f"No data found for ticker '{ticker}'.")
+
+        prices = [
+            {"date": str(idx.date()), "close": round(row["Close"], 2)}
+            for idx, row in hist.iterrows()
+        ]
+
+        return {
+            "ticker": ticker.upper(),
+            "range": range,
+            "interval": interval,
+            "prices": prices
+        }
+    except HTTPException:
+        raise  # re-raise manually raised 404
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+    
