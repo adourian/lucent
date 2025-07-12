@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sponsorToTicker } from "./sponsor_to_tickr";
 import {
   TrendingUp,
   Shield,
@@ -146,6 +147,15 @@ function App() {
       confidence: "Low",
     };
   };
+
+  function getTicker(sponsor: string | null) {
+    if (!sponsor) return null;
+    // Try to find a case-insensitive match
+    const found = Object.keys(sponsorToTicker).find(
+      key => key.trim().toLowerCase() === sponsor.trim().toLowerCase()
+    );
+    return found ? sponsorToTicker[found] : null;
+  }
 
   return (
     <Router>
@@ -316,7 +326,7 @@ function App() {
                               </div>
                             </div>
 
-                            {/* Sponsor Name  */}
+                            {/* Sponsor Name */}
                             <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
                               <div className="flex items-center justify-between mb-4">
                                 <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
@@ -365,6 +375,24 @@ function App() {
                               </div>
                             </div>
                           </div>
+
+                          {/* Ticker Display (NEW!) */}
+                          {getTicker(result.sponsor) && (
+                            <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-200 mt-6">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
+                                  Ticker
+                                </span>
+                                <BarChart3 className="w-4 h-4 text-blue-400" />
+                              </div>
+                              <div className="text-xl font-bold font-mono text-blue-800 mb-1">
+                                {getTicker(result.sponsor)}
+                              </div>
+                              <div className="text-xs text-slate-500 font-medium">
+                                Equity market symbol for sponsor
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
