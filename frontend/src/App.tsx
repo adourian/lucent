@@ -23,7 +23,7 @@ import {
 // Import BrowserRouter, Routes, and Route
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import AboutPage from "./AboutPage"; // Import the new AboutPage component
-console.log("🔍 VITE_API_BASE:", import.meta.env.VITE_API_BASE);
+
 function App() {
   // State variables for stock data and analysis
   const [stockData, setStockData] = useState<{ date: string; close: number }[] | null>(null);
