@@ -93,7 +93,7 @@ function App() {
       const data = await res.json();
 
       if (data.error) {
-        setError("Analysis failed. Please verify the NCTID format and try again.");
+        setError("Analysis failed. Please verify the NCTID and try again.");
         return;
       }
 
