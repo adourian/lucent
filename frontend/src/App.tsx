@@ -91,7 +91,7 @@ function App() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE}/predict/${nctid}`);
       const data = await res.json();
-
+      
       if (data.error) {
         setError("Analysis failed. Please verify the NCTID and try again.");
         return;
