@@ -966,4 +966,5 @@ export const sponsorToTicker: Record<string, string> = {
     'Zenas BioPharma (USA), LLC': 'ZENA',
     'Dyne Therapeutics': 'DYN',
     'Nuvalent Inc.': 'NUVL',
+    'BrightGene Bio-Medical Technology Co., Ltd.': '688166.SS'
 }
