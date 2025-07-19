@@ -302,7 +302,7 @@ function App() {
                           <input
                             id="nctid-input"
                             type="text"
-                            placeholder="Enter NCTID (e.g., NCT01721746)"
+                            placeholder="Enter NCTID (e.g., NCT06349759)"
                             value={nctid}
                             onChange={(e) => setNctid(e.target.value)}
                             onKeyPress={handleKeyPress}
