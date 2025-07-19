@@ -40,6 +40,10 @@ function App() {
     nctid: string;
     phase: string;
     sponsor: string | null;
+    title?: string;
+    diseases?: string;
+    enrollment?: string;
+    completion_date?: string;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -103,6 +107,10 @@ function App() {
         nctid: data.nctid,
         phase: data.phase,
         sponsor: data.sponsor || "N/A",
+        title: data.title || "",
+        diseases: data.diseases || "",
+        enrollment: data.enrollment || "",
+        completion_date: data.completion_date || "",
       };
       setResult(newResult);
 
@@ -286,7 +294,7 @@ function App() {
                               ?
                             </span>
                             <div className="absolute left-5 top-1/2 transform -translate-y-1/2 ml-2 w-64 p-3 bg-white border border-slate-200 shadow-lg rounded-xl text-xs text-slate-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
-                              An NCTID (e.g., NCT01721746) is a unique identifier for clinical trials registered at <a href="https://clinicaltrials.gov/" target="_blank" className="text-blue-600 underline">ClinicalTrials.gov</a>.
+                              An NCTID (e.g., NCT06349759) is a unique identifier for clinical trials registered at <a href="https://clinicaltrials.gov/" target="_blank" className="text-blue-600 underline">ClinicalTrials.gov</a>.
                             </div>
                           </div>
                         </label>
@@ -306,7 +314,7 @@ function App() {
                         </div>
                       </div>
 
-                      {/* Enhanced Submit Button */}
+                      {/* Submit Button */}
                       <button
                         onClick={handleSubmit}
                         disabled={loading || !nctid.trim()}
@@ -325,7 +333,14 @@ function App() {
                         )}
                       </button>
 
-                      {/* Enhanced Error Display */}
+                      {/* Wait Time Display */}
+                      {loading && (
+                        <div className="text-sm text-slate-500 font-medium text-center mt-3">
+                          Expected wait time: <span className="font-semibold text-slate-700">15–30 seconds</span>
+                        </div>
+                      )}
+
+                      {/* Error Display */}
                       {error && (
                         <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6">
                           <div className="flex items-start space-x-4">
@@ -339,51 +354,46 @@ function App() {
                           </div>
                         </div>
                       )}
+          
 
-                      {/* Enhanced Results Display */}
+                      {/* Results Display */}
                       {result && (
                         <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl p-8 border-2 border-slate-200">
+                          
+                          {/* Header */}
                           <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center space-x-3">
                               <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center">
-                                <Target className="w-6 h-6 text-white" />
+                                <BarChart3 className="w-6 h-6 text-white" />
                               </div>
-                              <h3 className="text-2xl font-bold text-slate-900">
-                                Analysis Results
-                              </h3>
+                              <h3 className="text-2xl font-bold text-slate-900">Analysis Results</h3>
                             </div>
-                            <div className="flex items-center space-x-2 text-sm text-slate-600 bg-white px-4 py-2 rounded-full shadow-sm">
-                              <Clock className="w-4 h-4" />
-                              <span className="font-medium">Generated {new Date().toLocaleTimeString()}</span>
+                            <div className="flex items-center space-x-2 text-xs text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full shadow-sm">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span className="font-light">Generated</span>
+                              <span className="font-medium text-sm">{new Date().toLocaleTimeString()}</span>
                             </div>
                           </div>
 
+                          {/* Key Metrics */}
                           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            {/* Trial ID Card */}
-                            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
+                            {/* Trial ID */}
+                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
                               <div className="flex items-center justify-between mb-4">
-                                <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-                                  Trial ID
-                                </span>
-                                <Target className="w-4 h-4 text-slate-400" />
+                                <span className="text-sm font-semibold text-slate-600 uppercase">Trial ID</span>
+                                <Target className="w-4 h-4 text-blue-400" />
                               </div>
-                              <div className="text-xl font-bold font-mono text-slate-900 mb-2">
-                                {result.nctid}
-                              </div>
-                              <div className="text-xs text-slate-500 font-medium">
-                                ClinicalTrials.gov
-                              </div>
+                              <div className="text-lg font-mono text-slate-900">{result.nctid}</div>
+                              <div className="text-xs text-slate-500 mt-1">ClinicalTrials.gov</div>
                             </div>
 
                             {/* Success Probability */}
-                            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
+                            <div className="bg-white rounded-2xl p-6 border-2 border-emerald-200 shadow-md">
                               <div className="flex items-center justify-between mb-4">
-                                <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-                                  Success Probability
-                                </span>
+                                <span className="text-sm font-semibold text-slate-600 uppercase">Success Probability</span>
                                 <TrendingUp className={`w-4 h-4 ${getRiskLevel(result.probability).color}`} />
                               </div>
-                              <div className={`text-3xl font-bold ${getRiskLevel(result.probability).color} mb-2`}>
+                              <div className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 text-transparent bg-clip-text">
                                 {(result.probability * 100).toFixed(1)}%
                               </div>
                               <div className="text-xs text-slate-500 font-medium">
@@ -391,84 +401,81 @@ function App() {
                               </div>
                             </div>
 
-                            {/* Sponsor Name */}
-                            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
+                            {/* Sponsor */}
+                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
                               <div className="flex items-center justify-between mb-4">
-                                <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-                                  Sponsor
-                                </span>
-                                <Building2 className="w-4 h-4 text-slate-400" />
+                                <span className="text-sm font-semibold text-slate-600 uppercase">Sponsor</span>
+                                <Building2 className="w-4 h-4 text-blue-400" />
                               </div>
-                              <div className="text-sm font-bold text-slate-900 break-words">
-                                {result.sponsor}
-                              </div>
-                              <div className="text-xs text-slate-500 font-medium mt-2">
-                                Trial owner
-                              </div>
+                              <div className="text-base font-semibold text-slate-900 break-words">{result.sponsor}</div>
+                              <div className="text-xs text-slate-500 mt-1">Trial owner</div>
                             </div>
 
                             {/* Trial Phase */}
-                            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
+                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
                               <div className="flex items-center justify-between mb-4">
-                                <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-                                  Trial Phase
-                                </span>
-                                <Beaker className="w-4 h-4 text-slate-400" />
+                                <span className="text-sm font-semibold text-slate-600 uppercase">Trial Phase</span>
+                                <Beaker className="w-4 h-4 text-blue-400" />
                               </div>
-                              <div className="text-lg font-bold text-slate-900 capitalize">
-                                {result.phase || "N/A"}
-                              </div>
-                              <div className="text-xs text-slate-500 font-medium mt-2">
-                                Clinical development stage
-                              </div>
+                              <div className="text-lg font-bold text-slate-900 capitalize">{result.phase || "N/A"}</div>
+                              <div className="text-xs text-slate-500 mt-1">Clinical development stage</div>
                             </div>
                           </div>
 
-                          {/* Enhanced Risk Description */}
-                          <div className={`p-6 rounded-2xl border-2 ${getRiskLevel(result.probability).bg} ${getRiskLevel(result.probability).border}`}>
+                          {/* Risk Panel */}
+                          <div className={`p-6 rounded-2xl border-2 ${getRiskLevel(result.probability).bg} ${getRiskLevel(result.probability).border} mb-6`}>
                             <div className="flex items-start space-x-4">
-                              <div className={`w-3 h-3 rounded-full ${getRiskLevel(result.probability).indicator} mt-2 flex-shrink-0`}></div>
+                              <div className={`w-5 h-5 rounded-full ${getRiskLevel(result.probability).indicator} mt-1 ring-1 ring-current ring-opacity-50`} />
                               <div>
-                                <div className="flex items-center space-x-2 mb-2">
+                                <div className="flex items-center space-x-2 mb-1">
                                   <span className={`font-bold text-lg ${getRiskLevel(result.probability).color}`}>
                                     {getRiskLevel(result.probability).level}
                                   </span>
                                 </div>
-                                <p className="text-slate-700 font-medium leading-relaxed">
+                                <p className="text-slate-700 font-semibold leading-relaxed">
                                   {getRiskLevel(result.probability).description}
                                 </p>
                               </div>
                             </div>
                           </div>
 
-                          {/* Ticker Display */}
-                          {getTicker(result.sponsor) && (
-                            <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-200 mt-6">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-                                  Ticker
-                                </span>
-                                <BarChart3 className="w-4 h-4 text-blue-400" />
+                          {/* Trial Title */}
+                          <div className="max-w-3xl mx-auto mb-6">
+                            <div className="text-center">
+                              <div className="text-xs font-semibold text-slate-500 uppercase mb-1">Trial Title</div>
+                            </div>
+                            <p className="text-sm text-slate-800 leading-snug text-center">{result.title}</p>
+                          </div>
+
+                          {/* Metadata Grouped */}
+                          <div className="bg-slate-50 rounded-2xl p-6 shadow-sm border border-slate-100 mb-6">
+                            <div className="grid sm:grid-cols-2 gap-4 text-center sm:text-left">
+                              <div>
+                                <div className="text-xs font-semibold text-slate-500 uppercase mb-1">Disease(s)</div>
+                                <div className="text-sm font-medium text-slate-800">{result.diseases}</div>
                               </div>
-                              <div className="text-xl font-bold font-mono text-blue-800 mb-1">
-                                {getTicker(result.sponsor)}
-                              </div>
-                              <div className="text-xs text-slate-500 font-medium">
-                                Equity market symbol for sponsor
+                              <div>
+                                <div className="text-xs font-semibold text-slate-500 uppercase mb-1">Enrollment</div>
+                                <div className="text-sm font-medium text-slate-800">{result.enrollment || "N/A"}</div>
                               </div>
                             </div>
-                          )}
+                          </div>
+
+                          {/* Stock Chart */}
                           {getTicker(result.sponsor) && (
-                            <div className="bg-white rounded-2xl p-6 shadow-lg border border-indigo-200 mt-6">
+                            <div className="bg-white rounded-2xl p-6 shadow-md border border-sky-400">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-semibold text-slate-600 uppercase tracking-wide">
-                                  Stock Price Chart
-                                </span>
+                                <div className="flex flex-col">
+                                  <span className="text-sm font-semibold text-slate-600 uppercase">Stock Price Chart</span>
+                                  <span className="text-xs text-blue-500 font-semibold mt-0.5">
+                                    Ticker: <span className="text-blue-700 font-bold">{getTicker(result.sponsor)}</span>
+                                  </span>
+                                </div>
                                 <select
                                   value={stockRange}
                                   onChange={(e) => setStockRange(e.target.value)}
                                   disabled={stockLoading}
-                                  className="text-sm border border-slate-300 rounded-lg px-2 py-1"
+                                  className="text-sm border border-slate-300 rounded-lg px-2 py-1 hover:bg-slate-100 focus:ring-2 focus:ring-sky-300"
                                 >
                                   {["1mo", "3mo", "6mo", "1y", "5y"].map((r) => (
                                     <option key={r} value={r}>{r}</option>
@@ -479,14 +486,20 @@ function App() {
                               {stockData ? (
                                 <ResponsiveContainer width="100%" height={200}>
                                   <LineChart data={stockData}>
-                                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                                    <YAxis tick={{ fontSize: 10 }} domain={["auto", "auto"]} />
+                                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#64748B' }} />
+                                    <YAxis tick={{ fontSize: 10, fill: '#64748B' }} domain={["auto", "auto"]} />
                                     <Tooltip />
-                                    <Line type="monotone" dataKey="close" stroke="#6366F1" strokeWidth={2} dot={false} />
+                                    <Line
+                                      type="monotone"
+                                      dataKey="close"
+                                      stroke="#00C8FF"
+                                      strokeWidth={3}
+                                      dot={false}
+                                    />
                                   </LineChart>
                                 </ResponsiveContainer>
                               ) : (
-                                <p className="text-xs text-slate-500 mt-2">{stockError}</p>
+                                <p className="text-xs text-red-500 mt-2">{stockError || "Unable to fetch stock data."}</p>
                               )}
                             </div>
                           )}

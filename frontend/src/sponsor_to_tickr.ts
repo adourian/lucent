@@ -968,4 +968,5 @@ export const sponsorToTicker: Record<string, string> = {
     'Nuvalent Inc.': 'NUVL',
     'BrightGene Bio-Medical Technology Co., Ltd.': '688166.SS',
     'Suzhou Suncadia Biopharmaceuticals Co., Ltd.': '600276.SS',
+    'GRAIL, Inc.': 'GRAL',
 }
