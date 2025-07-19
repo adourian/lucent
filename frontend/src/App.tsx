@@ -336,7 +336,7 @@ function App() {
                       {/* Wait Time Display */}
                       {loading && (
                         <div className="text-sm text-slate-500 font-medium text-center mt-3">
-                          Expected wait time: <span className="font-semibold text-slate-700">15–30 seconds</span>
+                          Usually takes <span className="font-semibold text-slate-700">10-20 seconds</span>
                         </div>
                       )}
 
