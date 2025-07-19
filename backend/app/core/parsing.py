@@ -1,29 +1,23 @@
 
 
 def parse_trial_json(data: dict):
-    """
-    Extract relevant fields from ClinicalTrials.gov v2 study JSON for preprocessing.
-    """
     protocol = data.get('protocolSection', {})
 
-    # 1. Sponsor
     sponsor = protocol.get('sponsorCollaboratorsModule', {}).get('leadSponsor', {}).get('name', "")
-
-    # 2. Has results
     has_results = data.get('hasResults', False)
-
-    # 3. Brief summary
     brief_summary = protocol.get('descriptionModule', {}).get('briefSummary', "")
-
-    # 4. Eligibility criteria
     eligibility = protocol.get('eligibilityModule', {}).get('eligibilityCriteria', "")
-
-    # 5. Diseases/conditions
     diseases = protocol.get('conditionsModule', {}).get('conditions', [])
-
-    # 6. Clinical phase
     phase_list = protocol.get('designModule', {}).get('phases', [])
     phase = phase_list[0] if phase_list else "NA"
+
+    # ✅ Additions
+    title = protocol.get('identificationModule', {}).get('briefTitle', "")
+    status = protocol.get('statusModule', {}).get('overallStatus', "")
+    enrollment = protocol.get('designModule', {}).get('enrollment', {}).get('count', "")
+    if not enrollment or enrollment == "NA":
+        enrollment = protocol.get('designModule', {}).get('enrollmentInfo', {}).get('count', "")
+    completion_date = protocol.get('statusModule', {}).get('completionDateStruct', {}).get('date', "")
 
     return {
         "sponsor": sponsor,
@@ -31,7 +25,11 @@ def parse_trial_json(data: dict):
         "brief_summary": brief_summary,
         "eligibility": eligibility,
         "diseases": diseases,
-        "phase": phase
+        "phase": phase,
+        "title": title,
+        "status": status,
+        "enrollment": enrollment,
+        "completion_date": completion_date
     }
 
 if __name__ == "__main__":

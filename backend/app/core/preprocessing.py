@@ -61,7 +61,7 @@ def preprocess_trial(
     Args:
         parsed_trial (dict): Output from parse_trial_json
     Returns:
-        dict: ready-to-infer fields
+        dict: ready-to-infer fields + metadata
     """
     # Phase normalization
     phase_norm = normalize_phase(parsed_trial.get("phase", ""))
@@ -74,14 +74,17 @@ def preprocess_trial(
     # Diseases: flatten to comma-separated string
     diseases_flat = clean_and_join_diseases(parsed_trial.get("diseases", []))
 
-    # Output dictionary
     return {
         "sponsor": parsed_trial.get("sponsor", ""),
         "description": description.strip(),
         "inclusion_criteria": inclusion,
         "exclusion_criteria": exclusion,
         "diseases": diseases_flat,
-        "phase": phase_norm
+        "phase": phase_norm,
+        "title": parsed_trial.get("title", ""),
+        "status": parsed_trial.get("status", ""),
+        "enrollment": parsed_trial.get("enrollment", ""),
+        "completion_date": parsed_trial.get("completion_date", ""),
     }
 
 # Example usage (requires correct import paths and supporting code):

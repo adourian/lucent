@@ -46,15 +46,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/predict/{nctid}")
+@app.get("/predict/{nctid}", include_in_schema=False)
+@app.head("/predict/{nctid}")
 def predict_trial(nctid: str):
     try:
         trial_data = fetch_nctid_data(nctid)
         parsed = parse_trial_json(trial_data)
         prepped = preprocess_trial(parsed)
-        result = predictor.predict_with_uncertainty(prepped, n_samples=1000)
+        result = predictor.predict_with_uncertainty(prepped, n_samples=500)
+
         print(f"[Lucent] {nctid} | Deterministic: {result['deterministic']} | MC: {result['probability']} ± {result['uncertainty']}")
-        return {"nctid": nctid, "phase": prepped["phase"], "sponsor": prepped["sponsor"],**result}
+
+        return {
+            "nctid": nctid,
+            "phase": prepped["phase"],
+            "sponsor": prepped["sponsor"],
+            "title": prepped.get("title", ""),
+            "status": prepped.get("status", ""),
+            "diseases": prepped.get("diseases", ""),
+            "enrollment": prepped.get("enrollment", ""),
+            "completion_date": prepped.get("completion_date", ""),
+            **result
+        }
     except Exception as e:
         return {"error": str(e)}
     

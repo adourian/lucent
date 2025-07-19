@@ -25,7 +25,7 @@ def fetch_nctid_data(nctid: str):
 
 if __name__ == "__main__":
     # Example usage
-    nctid = "NCT00000172"
+    nctid = "NCT01236547"
     try:
         trial_data = fetch_nctid_data(nctid)
         print(trial_data)
