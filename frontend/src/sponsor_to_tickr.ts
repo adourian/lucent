@@ -634,7 +634,7 @@ export const sponsorToTicker: Record<string, string> = {
     'Mylan Pharma UK Ltd.': 'VTRS',
     'Novavax': 'NVAX',
     'Abivax S.A.': 'ABVX',
-    'Beijing Biostar Pharmaceuticals Co., Ltd.': '810563.SS',
+    'Beijing Biostar Pharmaceuticals Co., Ltd.': '2563.HK',
     'Galecto Biotech AB': 'GLTO',
     'Bellerophon': 'BLPH',
     'MicuRx': '688373.SS',
@@ -971,5 +971,5 @@ export const sponsorToTicker: Record<string, string> = {
     'GRAIL, Inc.': 'GRAL',
     'Adlai Nortye Biopharma Co., Ltd.': 'ANL',
     'Aytu BioPharma, Inc.': 'AYTU',
-    'Beijing Biostar Pharmaceuticals Co., Ltd.': '2563.HK',
+    'CStone Pharmaceuticals': 'CSPHF',
 }
