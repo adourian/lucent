@@ -970,4 +970,5 @@ export const sponsorToTicker: Record<string, string> = {
     'Suzhou Suncadia Biopharmaceuticals Co., Ltd.': '600276.SS',
     'GRAIL, Inc.': 'GRAL',
     'Adlai Nortye Biopharma Co., Ltd.': 'ANL',
+    'Aytu BioPharma, Inc.': 'AYTU',
 }
