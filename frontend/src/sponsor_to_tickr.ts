@@ -972,4 +972,5 @@ export const sponsorToTicker: Record<string, string> = {
     'Adlai Nortye Biopharma Co., Ltd.': 'ANL',
     'Aytu BioPharma, Inc.': 'AYTU',
     'CStone Pharmaceuticals': 'CSPHF',
+    'DBV Technologies': 'DBVT',
 }
