@@ -971,4 +971,5 @@ export const sponsorToTicker: Record<string, string> = {
     'GRAIL, Inc.': 'GRAL',
     'Adlai Nortye Biopharma Co., Ltd.': 'ANL',
     'Aytu BioPharma, Inc.': 'AYTU',
+    'Beijing Biostar Pharmaceuticals Co., Ltd.': '2563.HK',
 }
