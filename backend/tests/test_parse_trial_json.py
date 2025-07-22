@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 
-from backend.app.core.parsing import parse_trial_json  # Adjust to your actual import path
+from backend.app.core.parsing import parse_trial_json
 
 
 def test_parse_trial_json_full_fields():

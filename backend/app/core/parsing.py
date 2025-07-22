@@ -34,7 +34,7 @@ def parse_trial_json(data: dict):
 
 if __name__ == "__main__":
     from app.services.clinicaltrials_api import fetch_nctid_data
-    nctid = "NCT06056323"  # Example NCTID
+    nctid = "NCT00000897"
     try:
         trial_data = fetch_nctid_data(nctid)
         parsed_trial = parse_trial_json(trial_data)
