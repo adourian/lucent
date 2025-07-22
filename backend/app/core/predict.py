@@ -113,6 +113,9 @@ class TrialPredictor:
                 out = self.model(sponsor_tensor, disease_tensor, incl_tensor, excl_tensor, summary_tensor, phase_tensor)
                 preds.append(torch.sigmoid(out).item())
 
+        # Reset model to evaluation mode after sampling
+        self.model.eval()
+
         preds_np = np.array(preds)
         prob_mean = preds_np.mean()
         prob_std = preds_np.std()
