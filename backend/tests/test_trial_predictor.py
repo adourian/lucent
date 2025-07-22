@@ -23,7 +23,10 @@ def mock_trial_dict():
 
 @pytest.fixture
 def real_model_predictor(monkeypatch):
-    model_path = "../backend/app/models/model_weights.pth"
+    # Load model weights relative to this tests directory
+    model_path = os.path.join(
+        os.path.dirname(__file__), "..", "app", "models", "model_weights.pth"
+    )
     predictor = TrialPredictor(model_path=model_path, device="cpu")
 
     # Patch embeddings to fixed vectors matching expected dimensions
