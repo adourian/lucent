@@ -973,4 +973,6 @@ export const sponsorToTicker: Record<string, string> = {
     'Aytu BioPharma, Inc.': 'AYTU',
     'CStone Pharmaceuticals': 'CSPHF',
     'DBV Technologies': 'DBVT',
+    'Ondine Biomedical Inc.': 'OBI.L',
+    'VistaGen Therapeutics, Inc.': 'VTGN',
 }
