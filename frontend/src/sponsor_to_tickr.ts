@@ -975,4 +975,5 @@ export const sponsorToTicker: Record<string, string> = {
     'DBV Technologies': 'DBVT',
     'Ondine Biomedical Inc.': 'OBI.L',
     'VistaGen Therapeutics, Inc.': 'VTGN',
+    'Sylentis, S.A.': 'ZEL.DE',
 }

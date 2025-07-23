@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import React from 'react';
 import { sponsorToTicker } from "./sponsor_to_tickr";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import {
@@ -22,11 +23,13 @@ import {
 
 // Import BrowserRouter, Routes, and Route
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import AboutPage from "./AboutPage"; // Import the new AboutPage component
+import AboutPage from "./AboutPage"; 
+import MetricDisplay from "./MetricDisplay";
 
 function App() {
   // State variables for stock data and analysis
   const [stockData, setStockData] = useState<{ date: string; close: number }[] | null>(null);
+  const [stockMetadata, setStockMetadata] = useState<{ [key: string]: any } | null>(null);
   const [stockRange, setStockRange] = useState("6mo");
   const [stockError, setStockError] = useState<string | null>(null);
   const [currentTicker, setCurrentTicker] = useState<string | null>(null);
@@ -60,32 +63,36 @@ function App() {
   });
 
   useEffect(() => {
-  const fetchStockData = async () => {
-    if (!currentTicker) return;
+    const fetchStockData = async () => {
+      if (!currentTicker) return;
 
-    setStockLoading(true);
+      setStockLoading(true);
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE}/finance/${currentTicker}?range=${stockRange}&interval=1d`);
-      const finance = await res.json();
-      if (finance.prices && finance.prices.length > 0) {
-        setStockData(finance.prices);
-        setStockError(null);
-      } else {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE}/finance/${currentTicker}?range=${stockRange}&interval=1d`);
+        const finance = await res.json();
+
+        if (finance.prices && finance.prices.length > 0) {
+          setStockData(finance.prices);
+          setStockMetadata(finance.metadata || null); // <- New line to store metadata
+          setStockError(null);
+        } else {
+          setStockData(null);
+          setStockMetadata(null);
+          setStockError("No price data available");
+        }
+      } catch (err) {
+        console.error("Stock fetch error:", err);
         setStockData(null);
-        setStockError("No price data available");
+        setStockMetadata(null);
+        setStockError("Error loading stock data");
+      } finally {
+        setStockLoading(false);
       }
-    } catch (err) {
-      console.error("Stock fetch error:", err);
-      setStockData(null);
-      setStockError("Error loading stock data");
-    } finally {
-      setStockLoading(false);
-    }
-  };
+    };
 
-  fetchStockData();
-}, [stockRange, currentTicker]);
+    fetchStockData();
+  }, [stockRange, currentTicker]);
 
   const handleSubmit = async () => {
     if (!nctid.trim()) return;
@@ -159,9 +166,9 @@ function App() {
     }
   };
 
-  // Enhanced risk assessment with more professional language
+  // Risk assessment
   const getRiskLevel = (p: number) => {
-    if (p >= 0.725) {
+    if (p >= 0.75) {
       return {
         level: "High Probability",
         description: "Strong likelihood of trial success based on historical data patterns",
@@ -170,6 +177,7 @@ function App() {
         border: "border-emerald-200",
         indicator: "bg-emerald-500",
         confidence: "High",
+        gradient: "from-emerald-400 to-teal-500",
       };
     }
     if (p >= 0.60) {
@@ -181,6 +189,7 @@ function App() {
         border: "border-green-200",
         indicator: "bg-green-500",
         confidence: "Moderate-High",
+        gradient: "from-lime-300 to-green-500",
       };
     }
     if (p >= 0.45) {
@@ -192,6 +201,7 @@ function App() {
         border: "border-yellow-200",
         indicator: "bg-yellow-500",
         confidence: "Moderate",
+        gradient: "from-yellow-300 to-yellow-500",
       };
     }
     if (p >= 0.30) {
@@ -203,6 +213,7 @@ function App() {
         border: "border-orange-200",
         indicator: "bg-orange-500",
         confidence: "Low-Moderate",
+        gradient: "from-orange-300 to-orange-500",
       };
     }
     return {
@@ -213,6 +224,7 @@ function App() {
       border: "border-red-200",
       indicator: "bg-red-500",
       confidence: "Low",
+      gradient: "from-red-400 to-red-600",
     };
   };
 
@@ -224,6 +236,25 @@ function App() {
     );
     return found ? sponsorToTicker[found] : null;
   }
+
+  function formatLargeNumber(value: number | null | undefined): string {
+    if (value === null || value === undefined || isNaN(value)) return "N/A";
+
+    const abs = Math.abs(value);
+    const sign = value < 0 ? "-" : "";
+
+    if (abs >= 1e9) return `${sign}$${(abs / 1e9).toFixed(1)}B`;
+    if (abs >= 1e6) return `${sign}$${(abs / 1e6).toFixed(1)}M`;
+    if (abs >= 1e3) return `${sign}$${(abs / 1e3).toFixed(1)}K`;
+
+    return `${sign}$${abs.toFixed(0)}`;
+  }
+
+  function formatPercentage(value: number | null | undefined): string {
+    if (value === null || value === undefined || isNaN(value)) return "N/A";
+    return `${(value * 100).toFixed(1)}%`;
+  }
+  
 
   return (
     <Router>
@@ -336,7 +367,7 @@ function App() {
                       {/* Wait Time Display */}
                       {loading && (
                         <div className="text-sm text-slate-500 font-medium text-center mt-3">
-                          Usually takes <span className="font-semibold text-slate-700">10-20 seconds</span>
+                          Can take some time...
                         </div>
                       )}
 
@@ -388,12 +419,12 @@ function App() {
                             </div>
 
                             {/* Success Probability */}
-                            <div className="bg-white rounded-2xl p-6 border-2 border-emerald-200 shadow-md">
+                            <div className={`bg-white rounded-2xl p-6 border-2 shadow-md ${getRiskLevel(result.probability).border}`}>
                               <div className="flex items-center justify-between mb-4">
                                 <span className="text-sm font-semibold text-slate-600 uppercase">Success Probability</span>
                                 <TrendingUp className={`w-4 h-4 ${getRiskLevel(result.probability).color}`} />
                               </div>
-                              <div className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 text-transparent bg-clip-text">
+                              <div className={`text-3xl font-bold bg-gradient-to-r ${getRiskLevel(result.probability).gradient} text-transparent bg-clip-text`}>
                                 {(result.probability * 100).toFixed(1)}%
                               </div>
                               <div className="text-xs text-slate-500 font-medium">
@@ -500,6 +531,91 @@ function App() {
                                 </ResponsiveContainer>
                               ) : (
                                 <p className="text-xs text-red-500 mt-2">{stockError || "Unable to fetch stock data."}</p>
+                              )}
+                            </div>
+                          )}
+                          {stockMetadata && (
+                            <div className="mt-12 bg-white rounded-3xl p-8 shadow-xl border border-slate-100 overflow-hidden relative"> {/* Lightened outer container */}
+                              
+                              {/* Optional: Subtle background pattern for futurism in light mode */}
+                              {/* <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
+                                    <div className="absolute inset-0 bg-grid-white [background-size:20px_20px] [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
+                                </div> */}
+
+                              <h3 className="text-center text-3xl font-extrabold text-slate-800 mb-8 tracking-tight relative z-10"> {/* Stronger contrast for title */}
+                                Sponsor Financial Snapshot
+                              </h3>
+
+                              {Object.values(stockMetadata).some((val) => val !== null && val !== undefined) ? (
+                                <div className="space-y-10 relative z-10"> {/* Increased spacing */}
+                                  
+                                  {/* Valuation */}
+                                  {(stockMetadata.marketCap || stockMetadata.enterpriseValue || stockMetadata.trailingPE) && (
+                                    <section className="group">
+                                      <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4 transition-colors duration-300 group-hover:text-blue-600"> {/* Accent on hover */}
+                                        Valuation
+                                      </h4>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {stockMetadata.marketCap && (
+                                          <MetricDisplay label="Market Cap" value={formatLargeNumber(stockMetadata.marketCap)} tooltip="Total value of the company's outstanding shares." />
+                                        )}
+                                        {stockMetadata.enterpriseValue && (
+                                          <MetricDisplay label="Enterprise Value" value={formatLargeNumber(stockMetadata.enterpriseValue)} tooltip="Total value of a company, including market capitalization, debt, and minority interest, minus cash and cash equivalents." />
+                                        )}
+                                        {stockMetadata.trailingPE && (
+                                          <MetricDisplay label="P/E (TTM)" value={stockMetadata.trailingPE !== null ? stockMetadata.trailingPE.toFixed(2) : 'N/A'} tooltip="Trailing twelve months Price-to-Earnings ratio. Indicates how much investors are willing to pay per dollar of earnings." />
+                                        )}
+                                      </div>
+                                    </section>
+                                  )}
+
+                                  {/* Revenue & Profitability */}
+                                  {(stockMetadata.totalRevenue || stockMetadata.profitMargins || stockMetadata.returnOnEquity) && (
+                                    <section className="group">
+                                      <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4 transition-colors duration-300 group-hover:text-blue-600">
+                                        Revenue & Profitability
+                                      </h4>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {stockMetadata.totalRevenue && (
+                                          <MetricDisplay label="Total Revenue" value={formatLargeNumber(stockMetadata.totalRevenue)} tooltip="Total amount of income generated by the sale of goods or services related to the company's primary operations." />
+                                        )}
+                                        {stockMetadata.profitMargins !== null && stockMetadata.profitMargins !== undefined && (
+                                          <MetricDisplay label="Profit Margin" value={formatPercentage(stockMetadata.profitMargins)} tooltip="Percentage of revenue left after all expenses, including taxes, have been deducted from sales." />
+                                        )}
+                                        {stockMetadata.returnOnEquity !== null && stockMetadata.returnOnEquity !== undefined && (
+                                          <MetricDisplay label="Return on Equity" value={formatPercentage(stockMetadata.returnOnEquity)} tooltip="Amount of net income returned as a percentage of shareholders equity. Measures profitability in relation to shareholder investments." />
+                                        )}
+                                      </div>
+                                    </section>
+                                  )}
+
+                                  {/* Liquidity & Risk */}
+                                  {(stockMetadata.currentRatio || stockMetadata.beta || stockMetadata.dividendYield) && (
+                                    <section className="group">
+                                      <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4 transition-colors duration-300 group-hover:text-blue-600">
+                                        Liquidity & Risk
+                                      </h4>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {stockMetadata.currentRatio && (
+                                          <MetricDisplay label="Current Ratio" value={stockMetadata.currentRatio !== null ? stockMetadata.currentRatio.toFixed(2) : 'N/A'} tooltip="Measures a company's ability to pay off its short-term liabilities with its short-term assets." />
+                                        )}
+                                        {stockMetadata.beta && (
+                                          <MetricDisplay label="Beta" value={stockMetadata.beta !== null ? stockMetadata.beta.toFixed(2) : 'N/A'} tooltip="Measures the volatility of a stock relative to the overall market." />
+                                        )}
+                                        {stockMetadata.dividendYield !== null && stockMetadata.dividendYield !== undefined && (
+                                          <MetricDisplay label="Dividend Yield" value={`${(stockMetadata.dividendYield).toFixed(2)}%`} tooltip="Ratio of a company's annual dividend per share compared to its share price. Represents the return on investment for a stock." />
+                                        )}
+                                      </div>
+                                    </section>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-md text-center text-slate-500 italic mt-8 p-4 bg-slate-50 rounded-lg border border-slate-200 relative z-10"> {/* Lightened empty state */}
+                                  Financial data not available for this sponsor. This may be due to the company being private, newly formed, or not publicly listed.
+                                  <p className="mt-2 text-xs text-slate-400">
+                                    (Note: This section is displayed only when financial data exists.)
+                                  </p>
+                                </div>
                               )}
                             </div>
                           )}

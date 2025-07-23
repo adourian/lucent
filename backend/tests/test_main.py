@@ -51,13 +51,21 @@ def test_get_stock_data_valid():
     assert response.status_code == 200
     data = response.json()
     
+    # Basic checks
     assert data["ticker"] == "PFE"
     assert data["range"] == "1mo"
     assert data["interval"] == "1d"
+
+    # Prices
     assert isinstance(data["prices"], list)
     assert len(data["prices"]) > 0
     assert "date" in data["prices"][0]
     assert "close" in data["prices"][0]
+
+    # Metadata checks
+    assert "metadata" in data
+    assert isinstance(data["metadata"], dict)
+    assert "marketCap" in data["metadata"]
 
 def test_get_stock_data_invalid_ticker():
     response = client.get("/finance/INVALIDTICKER?range=1mo&interval=1d")

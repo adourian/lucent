@@ -82,7 +82,6 @@ def get_stock_data(
         ticker_obj = yf.Ticker(ticker)
         hist = ticker_obj.history(period=range, interval=interval)
 
-        # Explicit empty data check for 404
         if hist.empty:
             raise HTTPException(status_code=404, detail=f"No data found for ticker '{ticker}'.")
 
@@ -91,14 +90,44 @@ def get_stock_data(
             for idx, row in hist.iterrows()
         ]
 
+        info = ticker_obj.info
+
+        metadata = {
+            "marketCap": info.get("marketCap"),
+            "enterpriseValue": info.get("enterpriseValue"),
+            "trailingPE": info.get("trailingPE"),
+            "forwardPE": info.get("forwardPE"),
+            "pegRatio": info.get("pegRatio"),
+            "priceToBook": info.get("priceToBook"),
+            "beta": info.get("beta"),
+            "dividendYield": info.get("dividendYield"),
+            "returnOnEquity": info.get("returnOnEquity"),
+            "revenueGrowth": info.get("revenueGrowth"),
+            "grossMargins": info.get("grossMargins"),
+            "operatingMargins": info.get("operatingMargins"),
+            "profitMargins": info.get("profitMargins"),
+            "totalRevenue": info.get("totalRevenue"),
+            "ebitda": info.get("ebitda"),
+            "totalDebt": info.get("totalDebt"),
+            "currentRatio": info.get("currentRatio"),
+            "quickRatio": info.get("quickRatio"),
+            "sector": info.get("sector"),
+            "industry": info.get("industry"),
+            "summary": info.get("longBusinessSummary"),
+            "fiftyTwoWeekHigh": info.get("fiftyTwoWeekHigh"),
+            "fiftyTwoWeekLow": info.get("fiftyTwoWeekLow"),
+        }
+
         return {
             "ticker": ticker.upper(),
             "range": range,
             "interval": interval,
-            "prices": prices
+            "prices": prices,
+            "metadata": metadata
         }
+
     except HTTPException:
-        raise  # re-raise manually raised 404
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
     
