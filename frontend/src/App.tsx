@@ -126,22 +126,47 @@ function App() {
       if (ticker) {
         try {
           const res = await fetch(`${import.meta.env.VITE_API_BASE}/finance/${ticker}?range=${stockRange}&interval=1d`);
+
+          if (!res.ok) {
+            // If the backend raises HTTPException(404) or any other HTTP error
+            const errorData = await res.json(); // Attempt to parse error message from backend
+            throw new Error(errorData.detail || `Failed to fetch financial data: ${res.statusText}`);
+          }
+
           const finance = await res.json();
+
+          // --- Handle Stock Chart Data ---
           if (finance.prices && finance.prices.length > 0) {
             setStockData(finance.prices);
-            setStockError(null);
           } else {
-            setStockData(null);
-            setStockError("No price data available");
+            setStockData(null); // No price data, clear chart
           }
-        } catch (err) {
-          console.error("Stock fetch error:", err);
-          setStockData(null);
-          setStockError("Error loading stock data");
+
+          // --- Handle Stock Metadata ---
+          // The backend always returns a 'metadata' object, even if values are null.
+          // We set stockMetadata to this object, and the JSX conditional will check its content.
+          if (finance.metadata) {
+            setStockMetadata(finance.metadata);
+          } else {
+            setStockMetadata(null); // Should theoretically not happen if backend always returns an object, but good for safety
+          }
+          
+          // Clear any previous stock error if data was successfully fetched
+          setStockError(null);
+
+        } catch (err: any) {
+          console.error("Financial data fetch error:", err);
+          setStockData(null); // Clear chart data on error
+          setStockMetadata(null); // Clear metadata on error
+          setStockError(err.message || "Error loading financial data.");
+        } finally {
+          setStockLoading(false);
         }
       } else {
-        setStockData(null);
-        setStockError("No data available");
+        // If no ticker is found for the sponsor
+        setStockData(null); // Clear stock chart data
+        setStockMetadata(null); // Clear financial metadata
+        setStockError("No public ticker found for this sponsor.");
       }
 
       const newPrediction = {
@@ -508,13 +533,22 @@ function App() {
                                   disabled={stockLoading}
                                   className="text-sm border border-slate-300 rounded-lg px-2 py-1 hover:bg-slate-100 focus:ring-2 focus:ring-sky-300"
                                 >
-                                  {["1mo", "3mo", "6mo", "1y", "5y"].map((r) => (
+                                  {["5d", "1mo", "3mo", "6mo", "1y", "5y", "10y", "max"].map((r) => (
                                     <option key={r} value={r}>{r}</option>
                                   ))}
                                 </select>
                               </div>
 
-                              {stockData ? (
+                              {/* Conditional rendering based on loading, data, and error */}
+                              {stockLoading ? ( // Show a loading state
+                                <div className="flex items-center justify-center h-48 text-sky-600">
+                                  <svg className="animate-spin h-8 w-8 mr-3 text-sky-500" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  <span>Loading stock data...</span>
+                                </div>
+                              ) : stockData ? (
                                 <ResponsiveContainer width="100%" height={200}>
                                   <LineChart data={stockData}>
                                     <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#64748B' }} />
@@ -530,17 +564,12 @@ function App() {
                                   </LineChart>
                                 </ResponsiveContainer>
                               ) : (
-                                <p className="text-xs text-red-500 mt-2">{stockError || "Unable to fetch stock data."}</p>
+                                <p className="text-sm text-red-500 mt-2 text-center">{stockError || "No stock data available for this selection."}</p> // Slightly larger error text, centered
                               )}
                             </div>
                           )}
                           {stockMetadata && (
                             <div className="mt-12 bg-white rounded-3xl p-8 shadow-xl border border-slate-100 overflow-hidden relative"> {/* Lightened outer container */}
-                              
-                              {/* Optional: Subtle background pattern for futurism in light mode */}
-                              {/* <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-                                    <div className="absolute inset-0 bg-grid-white [background-size:20px_20px] [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
-                                </div> */}
 
                               <h3 className="text-center text-3xl font-extrabold text-slate-800 mb-8 tracking-tight relative z-10"> {/* Stronger contrast for title */}
                                 Sponsor Financial Snapshot
@@ -583,7 +612,7 @@ function App() {
                                           <MetricDisplay label="Profit Margin" value={formatPercentage(stockMetadata.profitMargins)} tooltip="Percentage of revenue left after all expenses, including taxes, have been deducted from sales." />
                                         )}
                                         {stockMetadata.returnOnEquity !== null && stockMetadata.returnOnEquity !== undefined && (
-                                          <MetricDisplay label="Return on Equity" value={formatPercentage(stockMetadata.returnOnEquity)} tooltip="Amount of net income returned as a percentage of shareholders equity. Measures profitability in relation to shareholder investments." />
+                                          <MetricDisplay label="Return on Equity" value={stockMetadata.returnOnEquity.toFixed(2) + '%'} tooltip="Amount of net income returned as a percentage of shareholders equity. Measures profitability in relation to shareholder investments." />
                                         )}
                                       </div>
                                     </section>

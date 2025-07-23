@@ -976,4 +976,5 @@ export const sponsorToTicker: Record<string, string> = {
     'Ondine Biomedical Inc.': 'OBI.L',
     'VistaGen Therapeutics, Inc.': 'VTGN',
     'Sylentis, S.A.': 'ZEL.DE',
+    'BioNTech SE': 'BNTX',
 }
