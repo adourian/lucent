@@ -977,4 +977,5 @@ export const sponsorToTicker: Record<string, string> = {
     'VistaGen Therapeutics, Inc.': 'VTGN',
     'Sylentis, S.A.': 'ZEL.DE',
     'BioNTech SE': 'BNTX',
+    'Pharming Technologies B.V.': 'PHARM.AS',
 }
