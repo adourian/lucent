@@ -9,7 +9,7 @@ from app.core.generate_embeddings import TrialEmbedder
 from app.models.model import MultiInputNN
 
 # Ensure phase_labels are in this exact order
-phase_labels = ['early phase 1', 'phase 1', 'phase 1/phase 2', 'phase 2', 'phase 2/phase 3', 'phase 3', 'phase 4']
+phase_labels = ['early phase 1', 'phase 1', 'phase 1/phase 2', 'phase 2', 'phase 2/phase 3', 'phase 3', 'phase 4', 'nan']
 
 class TrialPredictor:
     def __init__(self, model_path: str, device=None):
@@ -28,14 +28,29 @@ class TrialPredictor:
 
     def _encode_phase(self, phase: str) -> np.ndarray:
         """
-        One-hot encode the phase field.
+        One-hot encode the phase field, including 'nan' as a category.
         """
+        # Convert to string and lower to handle potential None, np.nan, or varied casing
+        phase_str = str(phase).lower().strip()
+        
         one_hot = np.zeros(len(phase_labels), dtype=np.float32)
-        try:
-            idx = phase_labels.index(phase.lower())
-            one_hot[idx] = 1.0
-        except ValueError:
-            pass  # all zeros if unknown phase
+        
+        # Explicitly map empty/None/NaN to 'nan' category
+        if not phase_str or phase_str == 'nan': # handles "", " ", None, or actual 'nan' string
+            try:
+                idx = phase_labels.index('nan') # Find the index of the 'nan' category
+                one_hot[idx] = 1.0
+            except ValueError:
+                # Fallback if 'nan' category itself isn't in phase_labels
+                pass 
+        else:
+            try:
+                idx = phase_labels.index(phase_str)
+                one_hot[idx] = 1.0
+            except ValueError:
+                # If a non-empty/non-nan phase string is not found, it remains all zeros.
+                # This corresponds to phases seen in production but not in training labels.
+                pass 
         return one_hot
 
     def predict(self, trial_dict: dict) -> dict:
@@ -135,7 +150,7 @@ if __name__ == "__main__":
     from app.core.predict import TrialPredictor
 
     # Load trial
-    data = fetch_nctid_data("NCT00072579")
+    data = fetch_nctid_data("NCT05537935")
     parsed = parse_trial_json(data)
     prepped = preprocess_trial(parsed)
 

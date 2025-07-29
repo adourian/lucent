@@ -56,9 +56,9 @@ function App() {
 
   const [modelStats] = useState({
     avgProcessingTime: 20,
-    modelVersion: "0.2.0",
-    lastUpdated: "June 2025",
-    datasetSize: "17K+ trials",
+    modelVersion: "0.3.0",
+    lastUpdated: "July 2025",
+    datasetSize: "33K+ trials",
     accuracy: "70%",
   });
 

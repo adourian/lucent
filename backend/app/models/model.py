@@ -7,7 +7,7 @@ class ModalityTower(nn.Module):
         super(ModalityTower, self).__init__()
         layers = []
 
-        tower_dropout = 0.3
+        tower_dropout = 0.2
 
         for i in range(len(hidden_dims) - 1):
             layers.append(nn.Linear(hidden_dims[i], hidden_dims[i+1]))
@@ -38,7 +38,7 @@ class AttentionFusion(nn.Module):
         return attn_output.squeeze(1)                 # [B, D]
 
 class MultiInputNN(nn.Module):
-    def __init__(self, sponsor_dim=384, disease_dim=768, text_dim=768, num_features=7):
+    def __init__(self, sponsor_dim=384, disease_dim=768, text_dim=768, num_features=8):
         super(MultiInputNN, self).__init__()
 
         # Modality-specific towers
@@ -59,9 +59,9 @@ class MultiInputNN(nn.Module):
             nn.Dropout(0.2)
         )
 
-        final_dropout = 0.3
+        final_dropout = 0.2
 
-        # UPDATED: Final prediction head without sigmoid (BCEWithLogitsLoss handles it)
+        # Final prediction head 
         self.final_head = nn.Sequential(
             nn.Linear(64 + 32, 128),
             nn.BatchNorm1d(128),
@@ -71,7 +71,7 @@ class MultiInputNN(nn.Module):
             nn.BatchNorm1d(64),
             nn.LeakyReLU(),
             nn.Dropout(final_dropout),
-            nn.Linear(64, 1)  # Removed nn.Sigmoid() - BCEWithLogitsLoss applies it internally
+            nn.Linear(64, 1) 
         )
 
         

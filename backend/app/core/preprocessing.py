@@ -27,7 +27,7 @@ def clean_criteria(text: str) -> str:
     if not text:
         return ""
     text = text.replace('\r', '').replace('\n', ' ').replace(':', ' ')
-    for w in ['Inclusion', 'inclusion', 'INCLUSION', 'Criteria', 'criteria', 'CRITERIA']:
+    for w in ['Inclusion', 'inclusion', 'INCLUSION', 'Criteria', 'criteria', 'CRITERIA', 'DISEASE CHARACTERISTICS']:
         text = text.replace(w, '')
     text = re.sub(r'\s{2,}', ' ', text)
     return text.strip()
