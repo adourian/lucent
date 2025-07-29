@@ -350,7 +350,7 @@ function App() {
                               ?
                             </span>
                             <div className="absolute left-5 top-1/2 transform -translate-y-1/2 ml-2 w-64 p-3 bg-white border border-slate-200 shadow-lg rounded-xl text-xs text-slate-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
-                              An NCTID (e.g., NCT06349759) is a unique identifier for clinical trials registered at <a href="https://clinicaltrials.gov/" target="_blank" className="text-blue-600 underline">ClinicalTrials.gov</a>.
+                              An NCTID (e.g., NCT02654054) is a unique identifier for clinical trials registered at <a href="https://clinicaltrials.gov/" target="_blank" className="text-blue-600 underline">ClinicalTrials.gov</a>.
                             </div>
                           </div>
                         </label>
@@ -358,7 +358,7 @@ function App() {
                           <input
                             id="nctid-input"
                             type="text"
-                            placeholder="Enter NCTID (e.g., NCT06349759)"
+                            placeholder="Enter NCTID (e.g., NCT02654054)"
                             value={nctid}
                             onChange={(e) => setNctid(e.target.value)}
                             onKeyPress={handleKeyPress}
