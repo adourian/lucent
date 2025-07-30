@@ -978,4 +978,5 @@ export const sponsorToTicker: Record<string, string> = {
     'Sylentis, S.A.': 'ZEL.DE',
     'BioNTech SE': 'BNTX',
     'Pharming Technologies B.V.': 'PHARM.AS',
+    'Guangdong Hengrui Pharmaceutical Co., Ltd': '600276.SS',
 }
