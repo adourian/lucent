@@ -1,7 +1,7 @@
 import pytest
 import pytest_asyncio
 from unittest.mock import MagicMock
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 
 import sys
 import os
@@ -20,7 +20,8 @@ def event_loop():
 @pytest_asyncio.fixture(scope="function")
 async def async_client():
     """Fixture for an async test client."""
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
 
 @pytest.fixture(scope="function")
