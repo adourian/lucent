@@ -2,7 +2,7 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install system dependencies using a cache mount for apt
+# Install system dependencies. We can use a static ID 'apt' here.
 RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt \
     apt-get update && apt-get install -y \
     gcc \
@@ -12,9 +12,11 @@ RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt \
 
 COPY requirements.txt .
 
-# Install Python dependencies using a cache mount for pip
-# We remove --no-cache-dir to allow pip to use the cache
-RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip \
+# Install Python dependencies
+# Use 'requirements.txt' as the cache ID.
+# This tells the builder to use this cache layer AS LONG AS
+# requirements.txt hasn't changed.
+RUN --mount=type=cache,id=requirements.txt,target=/root/.cache/pip \
     pip install -r requirements.txt
 
 COPY . .
