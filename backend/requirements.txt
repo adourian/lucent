@@ -1,4 +1,4 @@
-# This project requires Python 3.0 to 3.12
+# requires Python 3.0 to 3.12
 fastapi
 uvicorn
 requests
@@ -10,3 +10,4 @@ scikit-learn
 httpx
 yfinance
 redis
+wheel
