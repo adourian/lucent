@@ -3,8 +3,9 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Install system dependencies
-RUN --mount=type=cache,id=myapp-apt,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,id=myapp-apt-lib,target=/var/lib/apt,sharing=locked \
+# No 'id' needed, BuildKit will handle it.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y \
     gcc \
     curl \
@@ -14,8 +15,8 @@ RUN --mount=type=cache,id=myapp-apt,target=/var/cache/apt,sharing=locked \
 COPY requirements.txt .
 
 # Install Python dependencies with pip cache
-RUN --mount=type=cache,id=myapp-pip,target=/root/.cache/pip \
-    pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
 
 COPY . .
 
