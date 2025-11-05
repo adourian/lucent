@@ -26,10 +26,10 @@ jobs:
       - name: Install backend deps
         run: |
           cd backend
-          # Add the current directory to PYTHONPATH
-          export PYTHONPATH=.
           pip install -r requirements.txt
           pip install pytest pytest-asyncio respx
+
+          pip install --upgrade fastapi httpx starlette
 
       - name: Run pytest
         run: |
