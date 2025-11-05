@@ -12,3 +12,5 @@ yfinance
 redis
 wheel
 httpx
+pytest-asyncio
+respx
