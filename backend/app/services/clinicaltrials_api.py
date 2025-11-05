@@ -1,5 +1,25 @@
 import requests
+import httpx
 from typing import List, Dict
+
+
+
+async def fetch_nctid_data_async(nctid: str):
+    """
+    Fetches trial data from ClinicalTrials.gov v2 API asynchronously.
+    """
+    base_url = f"https://clinicaltrials.gov/api/v2/studies/{nctid}"
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.get(base_url)
+    
+    if response.status_code != 200:
+        raise Exception(f"ClinicalTrials.gov API returned status {response.status_code}")
+    
+    data = response.json()
+    return data
+
+
 
 
 def fetch_nctid_data(nctid: str):

@@ -11,3 +11,4 @@ httpx
 yfinance
 redis
 wheel
+httpx

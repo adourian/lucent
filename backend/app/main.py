@@ -3,12 +3,13 @@ import redis
 import json
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.concurrency import run_in_threadpool
 import yfinance as yf
 from typing import Literal
 
 from app.core.parsing import parse_trial_json
 from app.core.preprocessing import preprocess_trial
-from app.services.clinicaltrials_api import fetch_nctid_data
+from app.services.clinicaltrials_api import fetch_nctid_data_async, fetch_nctid_data
 from app.core.predict import TrialPredictor
 
 # Load model once at startup
@@ -67,7 +68,7 @@ app.add_middleware(
 
 @app.get("/predict/{nctid}", include_in_schema=False)
 @app.head("/predict/{nctid}")
-def predict_trial(nctid: str):
+async def predict_trial(nctid: str):
 
     # --- CACHE CHECK ---
     cache_key = f"nctid:{ENV}:{nctid}"  # Include ENV to separate caches
@@ -87,10 +88,14 @@ def predict_trial(nctid: str):
     # --- END: CACHE CHECK ---
 
     try:
-        trial_data = fetch_nctid_data(nctid)
+        trial_data = await fetch_nctid_data_async(nctid)
         parsed = parse_trial_json(trial_data)
         prepped = preprocess_trial(parsed)
-        result = predictor.predict_with_uncertainty(prepped, n_samples=500)
+        result = await run_in_threadpool(
+            predictor.predict_with_uncertainty, 
+            prepped, 
+            n_samples=500
+        )
 
         print(f"[Lucent] {nctid} | Deterministic: {result['deterministic']} | MC: {result['probability']} ± {result['uncertainty']}")
 
@@ -123,14 +128,14 @@ def predict_trial(nctid: str):
     
 
 @app.get("/finance/{ticker}")
-def get_stock_data(
+async def get_stock_data(
     ticker: str,
     range: Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"] = Query("1mo"),
     interval: Literal["1m", "5m", "15m", "30m", "1h", "1d", "1wk", "1mo", "3mo"] = Query("1d")
 ):
     try:
-        ticker_obj = yf.Ticker(ticker)
-        hist = ticker_obj.history(period=range, interval=interval)
+        ticker_obj = await run_in_threadpool(yf.Ticker, ticker)
+        hist = await run_in_threadpool(ticker_obj.history, period=range, interval=interval)
 
         if hist.empty:
             raise HTTPException(status_code=404, detail=f"No data found for ticker '{ticker}'.")
@@ -140,7 +145,7 @@ def get_stock_data(
             for idx, row in hist.iterrows()
         ]
 
-        info = ticker_obj.info
+        info = await run_in_threadpool(getattr, ticker_obj, 'info')
 
         metadata = {
             "marketCap": info.get("marketCap"),
