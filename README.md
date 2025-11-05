@@ -99,7 +99,17 @@ uvicorn app.main:app --reload  # http://localhost:8000/docs
 ```bash
 cd frontend
 npm install
+
+# Create .env file for local development
+echo "VITE_API_BASE=http://localhost:8000" > .env
+
 npm run dev                    # http://localhost:5173
+```
+
+**Important:** The frontend needs `VITE_API_BASE` environment variable to connect to the backend. The command above creates the `.env` file automatically, or you can create it manually:
+```env
+# frontend/.env
+VITE_API_BASE=http://localhost:8000
 ```
 
 Open two terminals (one for each command set) and you’ll have a hot-reloading dev stack running locally.
