@@ -147,8 +147,8 @@ class TrialPredictor:
         label = int(prob_mean >= 0.5)
 
         return {
-            "probability": round(prob_mean, 4),
-            "uncertainty": round(prob_std, 4),
+            "probability": round(float(prob_mean), 4),
+            "uncertainty": round(float(prob_std), 4),
             "label": label,
             "deterministic": round(deterministic_prob, 4)
         }
