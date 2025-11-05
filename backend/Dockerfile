@@ -2,6 +2,10 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+# --- FORCE UNBUFFERED LOGS ---
+# This makes print() statements and errors show up immediately
+ENV PYTHONUNBUFFERED=1
+
 # Install system dependencies including curl for health check
 RUN apt-get update && apt-get install -y \
     gcc \
@@ -10,7 +14,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-# This is slow, but it WORKS.
+
+# This will be slow ONCE, then cached by Docker on future deploys
+# (as long as requirements.txt doesn't change)
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
