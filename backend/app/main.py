@@ -70,7 +70,7 @@ app.add_middleware(
 def predict_trial(nctid: str):
 
     # --- CACHE CHECK ---
-    cache_key = f"nctid:{nctid}"
+    cache_key = f"nctid:{ENV}:{nctid}"  # Include ENV to separate caches
     
     if redis_client:
         try:
@@ -112,10 +112,10 @@ def predict_trial(nctid: str):
                 # Store the final response as a JSON string
                 # ex=86400 means "expire in 86,400 seconds" (24 hours)
                 redis_client.set(cache_key, json.dumps(final_response), ex=86400)
-                print(f"[Cache] SET for {nctid}. TTL 24 hours.")
+                print(f"[Cache] SET for {nctid} in {ENV}. TTL 24 hours.")
             except Exception as e:
                 print(f"Redis 'set' error: {e}")
-        # --- NEW CACHE SET ---
+        # --- CACHE SET ---
 
         return final_response
     
