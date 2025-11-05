@@ -37,13 +37,13 @@ async def test_predict_cache_miss(async_client, mock_redis):
     1. Call redis.get (and find nothing)
     2. Call fetch_nctid_data_async
     3. Call run_in_threadpool (for the predictor)
-    4. Call redis.set (to store the result)
+    4. Call run_in_threadpool (for redis.set)
     """
     # 1. Setup mocks
     mock_redis.get.return_value = None  # <-- Cache MISS
 
-    # We patch the functions *where they are imported* (i.e., in app.main)
     with patch("app.main.fetch_nctid_data_async", return_value=fake_api_response) as mock_fetch:
+        # We mock the threadpool to return the predictor response, then None (for the redis.set)
         with patch("app.main.run_in_threadpool", side_effect=[fake_predictor_response, None]) as mock_threadpool:
             
             # 2. Run test
@@ -56,15 +56,18 @@ async def test_predict_cache_miss(async_client, mock_redis):
             assert data["probability"] == 0.87
             
             # Check that all the correct functions were called
-            mock_redis.get.assert_called_once()
+            # We assume ENV is 'development' which is the default in the code
+            mock_redis.get.assert_called_once_with("nctid:development:NCT00000172")
             mock_fetch.assert_called_once_with("NCT00000172")
-            # First call to threadpool is the predictor
-            mock_threadpool.assert_any_call(
-                fake_predictor_response.__self__, # This gets complex, simpler to just check count
-                prepped_data, # This part is hard to mock, let's simplify
-            )
-            assert mock_threadpool.call_count == 2 # 1 for predictor, 1 for redis.set
-            mock_redis.set.assert_called_once() # Cache was set
+            
+            # Check that threadpool was called twice:
+            # 1. For the predictor
+            # 2. For the redis.set
+            assert mock_threadpool.call_count == 2
+            
+            # We can also check that redis.set itself (which runs IN the threadpool) was called
+            mock_redis.set.assert_called_once()
+
 
 async def test_predict_cache_hit(async_client, mock_redis):
     """
@@ -90,10 +93,10 @@ async def test_predict_cache_hit(async_client, mock_redis):
             assert response.json()["probability"] == 0.99
             
             # Check that slow functions were NOT called
-            mock_redis.get.assert_called_once()
+            mock_redis.get.assert_called_once() # get *was* called
             mock_fetch.assert_not_called()
-            mock_threadpool.assert_not_called() # Neither predictor nor redis.set
-            mock_redis.set.assert_not_called()
+            mock_threadpool.assert_not_called() # The slow calls were not made
+            mock_redis.set.assert_not_called()  # set was not called
 
 async def test_get_stock_data_valid(async_client, mock_redis):
     """Test finance endpoint (cache MISS), mocking all yfinance calls."""
@@ -103,8 +106,12 @@ async def test_get_stock_data_valid(async_client, mock_redis):
     mock_ticker = MagicMock()
     # Create a simple DataFrame-like object to mock iterrows
     mock_history = MagicMock(empty=False)
+    # Mock the date() method on the index
+    mock_index_date = MagicMock()
+    mock_index_date.date.return_value = "2023-01-01"
+    
     mock_history.iterrows.return_value = [
-        (MagicMock(date="2023-01-01"), {"Close": 150.0})
+        (mock_index_date, {"Close": 150.0})
     ]
     mock_ticker.history.return_value = mock_history
     mock_ticker.info = {"marketCap": 1000000, "sector": "Healthcare"}
@@ -124,6 +131,7 @@ async def test_get_stock_data_valid(async_client, mock_redis):
         data = response.json()
         assert data["ticker"] == "PFE"
         assert data["metadata"]["marketCap"] == 1000000
+        assert data["prices"][0]["date"] == "2023-01-01"
         assert mock_threadpool.call_count == 4
         mock_redis.set.assert_called_once() # Check that it cached the result
 
