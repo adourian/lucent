@@ -137,6 +137,22 @@ async def get_stock_data(
     range: Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"] = Query("1mo"),
     interval: Literal["1m", "5m", "15m", "30m", "1h", "1d", "1wk", "1mo", "3mo"] = Query("1d")
 ):
+    
+    # Key includes all params to make it unique for each request combination
+    cache_key = f"finance:{ENV}:{ticker}:{range}:{interval}"
+
+    if redis_client:
+        try:
+            # --- 2. CHECK CACHE (non-blocking) ---
+            cached_result = await run_in_threadpool(redis_client.get, cache_key)
+            if cached_result:
+                print(f"[Cache] HIT for finance:{ticker}")
+                return json.loads(cached_result)
+        except Exception as e:
+            print(f"Redis 'get' error: {e}")
+    
+    print(f"[Cache] MISS for finance:{ticker}. Fetching from yfinance.")
+
     try:
         ticker_obj = await run_in_threadpool(yf.Ticker, ticker)
         hist = await run_in_threadpool(ticker_obj.history, period=range, interval=interval)
@@ -177,13 +193,29 @@ async def get_stock_data(
             "fiftyTwoWeekLow": info.get("fiftyTwoWeekLow"),
         }
 
-        return {
+        final_response = {
             "ticker": ticker.upper(),
             "range": range,
             "interval": interval,
             "prices": prices,
             "metadata": metadata
         }
+
+        # SET CACHE (non-blocking) ---
+        if redis_client:
+            try:
+                # Set a 1-hour expiration (3600 seconds) for stock data
+                await run_in_threadpool(
+                    redis_client.set,
+                    cache_key,
+                    json.dumps(final_response),
+                    ex=3600 
+                )
+                print(f"[Cache] SET for finance:{ticker}. TTL 1 hour.")
+            except Exception as e:
+                print(f"Redis 'set' error: {e}")
+        
+        return final_response
 
     except HTTPException:
         raise
