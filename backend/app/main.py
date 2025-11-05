@@ -1,10 +1,10 @@
 import os
+import redis
+import json
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import yfinance as yf
 from typing import Literal
-
-
 
 from app.core.parsing import parse_trial_json
 from app.core.preprocessing import preprocess_trial
@@ -19,6 +19,25 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+
+# --- REDIS CONNECTION BLOCK ---
+REDIS_URL = os.getenv("REDIS_URL")
+redis_client = None
+
+if REDIS_URL:
+    print(f"Connecting to Redis at {REDIS_URL}...")
+    try:
+        # decode_responses=True makes it return strings, not bytes. Much easier.
+        redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+        redis_client.ping()
+        print("Redis connection successful.")
+    except Exception as e:
+        print(f"Warning: Could not connect to Redis: {e}")
+        redis_client = None
+else:
+    print("REDIS_URL not set. Caching is disabled.")
+# --- ---------------------- ---
 
 # Environment-based CORS configuration
 ENV = os.getenv("ENV", "development")
@@ -49,6 +68,24 @@ app.add_middleware(
 @app.get("/predict/{nctid}", include_in_schema=False)
 @app.head("/predict/{nctid}")
 def predict_trial(nctid: str):
+
+    # --- CACHE CHECK ---
+    cache_key = f"nctid:{nctid}"
+    
+    if redis_client:
+        try:
+            cached_result = redis_client.get(cache_key)
+            if cached_result:
+                print(f"[Cache] HIT for {nctid}")
+                # The result is stored as a JSON string, so we parse it back
+                return json.loads(cached_result)
+        except Exception as e:
+            # If cache check fails, just log it and proceed to compute
+            print(f"Redis 'get' error: {e}")
+
+    print(f"[Cache] MISS for {nctid}. Running full prediction.")
+    # --- END: CACHE CHECK ---
+
     try:
         trial_data = fetch_nctid_data(nctid)
         parsed = parse_trial_json(trial_data)
@@ -57,7 +94,7 @@ def predict_trial(nctid: str):
 
         print(f"[Lucent] {nctid} | Deterministic: {result['deterministic']} | MC: {result['probability']} ± {result['uncertainty']}")
 
-        return {
+        final_response = {
             "nctid": nctid,
             "phase": prepped["phase"],
             "sponsor": prepped["sponsor"],
@@ -68,6 +105,20 @@ def predict_trial(nctid: str):
             "completion_date": prepped.get("completion_date", ""),
             **result
         }
+
+        # --- CACHE SET ---
+        if redis_client:
+            try:
+                # Store the final response as a JSON string
+                # ex=86400 means "expire in 86,400 seconds" (24 hours)
+                redis_client.set(cache_key, json.dumps(final_response), ex=86400)
+                print(f"[Cache] SET for {nctid}. TTL 24 hours.")
+            except Exception as e:
+                print(f"Redis 'set' error: {e}")
+        # --- NEW CACHE SET ---
+
+        return final_response
+    
     except Exception as e:
         return {"error": str(e)}
     
