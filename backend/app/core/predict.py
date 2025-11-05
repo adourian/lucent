@@ -96,7 +96,7 @@ class TrialPredictor:
         }
     
     def predict_with_uncertainty(self, trial_dict: dict, n_samples: int = 20) -> dict:
-        # 1. Encode features once
+        # Encode features once
         sponsor_emb = self.embedder.encode_sponsors([trial_dict['sponsor']])
         disease_emb = self.embedder.encode_diseases([trial_dict['diseases']])
         incl_emb = self.embedder.encode_text_fields([trial_dict['inclusion_criteria']])
@@ -120,18 +120,28 @@ class TrialPredictor:
             deterministic_prob = torch.sigmoid(det_output).item()
 
 
+        # Expand all input tensors to create a batch of size n_samples
+        #    .expand() is very efficient; it doesn't actually copy data.
+        sponsor_batch = sponsor_tensor.expand(n_samples, -1)
+        disease_batch = disease_tensor.expand(n_samples, -1)
+        incl_batch = incl_tensor.expand(n_samples, -1)
+        excl_batch = excl_tensor.expand(n_samples, -1)
+        summary_batch = summary_tensor.expand(n_samples, -1)
+        phase_batch = phase_tensor.expand(n_samples, -1)
+
         # Enable MC dropout
         self.model.enable_mc_dropout()
-        preds = []
         with torch.no_grad():
-            for _ in range(n_samples):
-                out = self.model(sponsor_tensor, disease_tensor, incl_tensor, excl_tensor, summary_tensor, phase_tensor)
-                preds.append(torch.sigmoid(out).item())
+            out_batch = self.model(sponsor_batch, disease_batch, incl_batch, excl_batch, summary_batch, phase_batch)
+            
+            # Output is shape [n_samples, 1]. We apply sigmoid and convert to a flat numpy array.
+            preds_tensor = torch.sigmoid(out_batch)
+            preds_np = preds_tensor.cpu().numpy().flatten()
 
-        # Reset model to evaluation mode after sampling
+        # Reset model to evaluation mode
         self.model.eval()
 
-        preds_np = np.array(preds)
+        # 5. Calculate stats (unchanged)
         prob_mean = preds_np.mean()
         prob_std = preds_np.std()
         label = int(prob_mean >= 0.5)

@@ -110,8 +110,7 @@ def predict_trial(nctid: str):
         if redis_client:
             try:
                 # Store the final response as a JSON string
-                # ex=86400 means "expire in 86,400 seconds" (24 hours)
-                redis_client.set(cache_key, json.dumps(final_response), ex=86400)
+                redis_client.set(cache_key, json.dumps(final_response))
                 print(f"[Cache] SET for {nctid} in {ENV}. TTL 24 hours.")
             except Exception as e:
                 print(f"Redis 'set' error: {e}")
