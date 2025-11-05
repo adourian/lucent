@@ -1,6 +1,11 @@
 import pytest
 import respx
 import httpx
+
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from app.services.clinicaltrials_api import fetch_nctid_data_async
 
 # Mark all tests in this file as asyncio
