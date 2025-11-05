@@ -42,7 +42,7 @@ else:
 # Environment-based CORS configuration
 ENV = os.getenv("ENV", "development")
 
-if ENV == "production":
+if ENV == "production" or ENV == "dev":    ## Hosted instances
     cors_origins_env = os.getenv("CORS_ORIGINS", "")
     allowed_origins = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
         
