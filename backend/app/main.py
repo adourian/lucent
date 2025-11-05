@@ -71,11 +71,11 @@ app.add_middleware(
 async def predict_trial(nctid: str):
 
     # --- CACHE CHECK ---
-    cache_key = f"nctid:{ENV}:{nctid}"  # Include ENV to separate caches
+    cache_key = f"nctid:{ENV}:{nctid}"
     
     if redis_client:
         try:
-            cached_result = redis_client.get(cache_key)
+            cached_result = await run_in_threadpool(redis_client.get, cache_key)
             if cached_result:
                 print(f"[Cache] HIT for {nctid}")
                 # The result is stored as a JSON string, so we parse it back
@@ -115,7 +115,11 @@ async def predict_trial(nctid: str):
         if redis_client:
             try:
                 # Store the final response as a JSON string
-                redis_client.set(cache_key, json.dumps(final_response))
+                await run_in_threadpool(
+                    redis_client.set,
+                    cache_key, 
+                    json.dumps(final_response)
+                )
                 print(f"[Cache] SET for {nctid} in {ENV}. TTL 24 hours.")
             except Exception as e:
                 print(f"Redis 'set' error: {e}")
