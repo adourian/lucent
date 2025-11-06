@@ -979,4 +979,9 @@ export const sponsorToTicker: Record<string, string> = {
     'BioNTech SE': 'BNTX',
     'Pharming Technologies B.V.': 'PHARM.AS',
     'Guangdong Hengrui Pharmaceutical Co., Ltd': '600276.SS',
+    'Kenvue Brands LLC': 'KVUE',
+    'AFT Pharmaceuticals, Ltd.': 'AFP.AX',
+    'Colgate Palmolive': 'CL',
+    'BioSensics': 'BIOS.BR',
+    'Charles River Analytics': 'CRL',
 }
