@@ -1,6 +1,6 @@
 import pytest
 import pytest_asyncio
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from httpx import AsyncClient, ASGITransport
 
 import sys
@@ -32,3 +32,15 @@ def mock_redis():
     yield app.redis_client
     # Reset it after the test
     app.redis_client = redis_client
+
+@pytest.fixture(autouse=True)
+def mock_helpers():
+    # We must patch these synchronous functions to return clean, expected data
+    fake_prepped_data = {
+        "nctid": "NCT00000172", "phase": "phase 1", "sponsor": "Test Pharma",
+        "title": "Test Title", "status": "RECRUITING", "diseases": "Cancer",
+        "enrollment": "100", "completion_date": "2025-12-31"
+    }
+    with patch("app.main.parse_trial_json", return_value={"mocked": True}) as mock_parse, \
+         patch("app.main.preprocess_trial", return_value=fake_prepped_data) as mock_prep:
+        yield mock_parse, mock_prep
