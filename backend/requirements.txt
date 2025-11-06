@@ -1,11 +1,13 @@
-# This project requires Python 3.0 to 3.12
+# requires Python 3.0 to 3.12
 fastapi
 uvicorn
 requests
-pytest
 transformers
 torch==2.7.1 --extra-index-url https://download.pytorch.org/whl/cpu
 sentence-transformers
 scikit-learn
 httpx
 yfinance
+redis
+wheel
+httpx

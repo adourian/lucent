@@ -2,14 +2,21 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+# --- FORCE UNBUFFERED LOGS ---
+# This makes print() statements and errors show up immediately
+ENV PYTHONUNBUFFERED=1
+
 # Install system dependencies including curl for health check
 RUN apt-get update && apt-get install -y \
     gcc \
     curl \
-    tzdata \  
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
+
+# This will be slow ONCE, then cached by Docker on future deploys
+# (as long as requirements.txt doesn't change)
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
@@ -27,4 +34,3 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 
 # Use PORT environment variable with fallback
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
-
