@@ -4,7 +4,6 @@ import { sponsorToTicker } from "./sponsor_to_tickr";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import {
   TrendingUp,
-  Shield,
   Database,
   Clock,
   AlertTriangle,

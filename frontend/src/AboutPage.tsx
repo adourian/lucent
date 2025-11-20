@@ -1,6 +1,7 @@
-import { Database, BarChart3, Target, ArrowLeft, Beaker, Building2, Brain, Cpu, TrendingUp, Shield, Globe2 } from "lucide-react";
+import { Database, BarChart3, Target, ArrowLeft, Beaker, Brain, Cpu, Shield, Globe2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import architectureImage from "./assets/architecture.png";
+import { useEffect } from 'react';
 
 interface AboutPageProps {
   modelStats: {
@@ -13,6 +14,17 @@ interface AboutPageProps {
 }
 
 const AboutPage = ({ modelStats }: AboutPageProps) => {
+  
+  // Add this hook at the top of the component
+  useEffect(() => {
+    document.title = "About | Lucent Clinical Intelligence";
+    
+    // Cleanup function to reset title when leaving page
+    return () => {
+      document.title = "Lucent | AI Clinical Trial Prediction Platform";
+    };
+  }, []);
+  
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-sans">
       <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/60 shadow-sm sticky top-0 z-50">
