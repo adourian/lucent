@@ -2,7 +2,6 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# --- FORCE UNBUFFERED LOGS ---
 # This makes print() statements and errors show up immediately
 ENV PYTHONUNBUFFERED=1
 
