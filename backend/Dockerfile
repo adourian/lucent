@@ -14,8 +14,9 @@ RUN apt-get update && apt-get install -y \
 
 COPY requirements.txt .
 
-# This will be slow ONCE, then cached by Docker on future deploys
-# (as long as requirements.txt doesn't change)
+# Install PyTorch with CPU support
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+# Install other Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
