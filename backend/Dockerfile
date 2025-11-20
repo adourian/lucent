@@ -15,8 +15,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 # Install PyTorch with CPU support
-RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-# Install other Python dependencies
+RUN pip install --no-cache-dir "torch>=2.6.0" torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu# Install other Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
