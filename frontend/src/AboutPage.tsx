@@ -31,7 +31,7 @@ const AboutPage = ({ modelStats }: AboutPageProps) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {/* The New Logo Container */}
+              {/* The Logo Container */}
               <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-slate-100">
                  <img src="/vite.svg" alt="Lucent Logo" className="w-8 h-8" />
               </div>
