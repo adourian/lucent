@@ -285,13 +285,14 @@ function App() {
       <Routes>
         <Route path="/" element={
           <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-sans flex flex-col">
-            {/* Enhanced Header */}
+            {/* Header */}
             <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/60 shadow-sm sticky top-0 z-50">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <Beaker className="w-7 h-7 text-white" />
+                    {/* Updated Logo Container: White background, slate border */}
+                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-slate-100">
+                       <img src="/vite.svg" alt="Lucent Logo" className="w-8 h-8" />
                     </div>
                     <div>
                       <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-transparent">
