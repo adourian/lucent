@@ -6,7 +6,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 
-**👉 Live demo:** https://lucent-self.vercel.app
+**👉 Live demo:** https://lucentlabs.vercel.app
 
 **Clinical Trials Intelligence**
 
