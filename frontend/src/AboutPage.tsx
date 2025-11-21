@@ -1,4 +1,4 @@
-import { Database, BarChart3, Target, ArrowLeft, Beaker, Brain, Cpu, Shield, Globe2 } from "lucide-react";
+import { Database, BarChart3, Target, Activity, Brain, Cpu, Shield, Globe2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import architectureImage from "./assets/architecture.png";
 import { useEffect } from 'react';
