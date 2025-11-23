@@ -984,4 +984,5 @@ export const sponsorToTicker: Record<string, string> = {
     'Colgate Palmolive': 'CL',
     'BioSensics': 'BIOS.BR',
     'Charles River Analytics': 'CRL',
+    'Changchun GeneScience Pharmaceutical Co., Ltd.': '000661.SZ',
 }
