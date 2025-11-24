@@ -985,4 +985,5 @@ export const sponsorToTicker: Record<string, string> = {
     'BioSensics': 'BIOS.BR',
     'Charles River Analytics': 'CRL',
     'Changchun GeneScience Pharmaceutical Co., Ltd.': '000661.SZ',
+    'JHM BioPharma (Tonghua) Co. , Ltd.': '600867.SS',
 }
