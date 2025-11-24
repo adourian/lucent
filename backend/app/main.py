@@ -70,6 +70,11 @@ app.add_middleware(
 @app.head("/predict/{nctid}")
 async def predict_trial(nctid: str):
 
+    nctid = nctid.strip().upper()
+
+    if not nctid.startswith("NCT"):
+        raise HTTPException(status_code=400, detail="Invalid NCT ID format. Must start with 'NCT'.")
+
     # --- CACHE CHECK ---
     cache_key = f"nctid:{ENV}:{nctid}"
     
