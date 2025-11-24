@@ -987,4 +987,5 @@ export const sponsorToTicker: Record<string, string> = {
     'Changchun GeneScience Pharmaceutical Co., Ltd.': '000661.SZ',
     'JHM BioPharma (Tonghua) Co. , Ltd.': '600867.SS',
     'CSPC Ouyi Pharmaceutical Co., Ltd.': '1093.HK',
+    'Shanghai Hutchison Pharmaceuticals Limited': '2607.HK',
 }
