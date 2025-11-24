@@ -988,4 +988,5 @@ export const sponsorToTicker: Record<string, string> = {
     'JHM BioPharma (Tonghua) Co. , Ltd.': '600867.SS',
     'CSPC Ouyi Pharmaceutical Co., Ltd.': '1093.HK',
     'Shanghai Hutchison Pharmaceuticals Limited': '2607.HK',
+    'Dizal Pharmaceuticals': '688192.SS',
 }
