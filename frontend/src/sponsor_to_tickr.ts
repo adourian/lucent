@@ -990,4 +990,5 @@ export const sponsorToTicker: Record<string, string> = {
     'Shanghai Hutchison Pharmaceuticals Limited': '2607.HK',
     'Dizal Pharmaceuticals': '688192.SS',
     'CSPC Megalith Biopharmaceutical Co.,Ltd.': '1093.HK',
+    'Revolution Medicines, Inc.' : 'RVMD',
 }
