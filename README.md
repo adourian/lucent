@@ -8,24 +8,39 @@
 
 **👉 Live demo:** https://lucentlabs.vercel.app
 
-**Clinical Trials Intelligence**
+Lucent is an end-to-end machine learning system for predicting clinical trial outcomes from public trial data, combining multimodal neural networks with Monte Carlo Dropout for uncertainty estimation.
 
-Lucent is an end-to-end machine learning system for predicting clinical trial outcomes from public trial data, combining multimodal neural networks with uncertainty estimation.
+---
+
+## 🧠 Model & Training
+
+The prediction model served by Lucent was custom-trained by the author using a multi-modal neural network combining:
+
+- Clinical text embeddings (MedBERT, BioSimCSE)
+- Molecular representations (ChemBERTa on SMILES)
+- Structured trial metadata (phase, drug count, etc.)
+
+Each modality is processed through dedicated neural towers and fused via attention before final prediction.  
+Uncertainty is estimated at inference time using **Monte Carlo Dropout**.
+
+👉 Full model training, data processing, experiments, and results are documented here:  
+**https://github.com/adourian/Clinical-Trial-Outcomes**
+
+This repository contains the complete modeling pipeline, benchmarks, and architectural details.
 
 ---
 
 ## 🚀 Features
 
-- ⚡ **Pulls** study JSON instantly from ClinicalTrials.gov  
-- 🧠 **Predicts** success probability **+** MC-dropout uncertainty  
-- 💻 **Displays** in a clean React + Vite UI (mobile-responsive)  
-- 🔌 **Serves** via FastAPI with type hints & PyTest coverage  
-- 🐳 **Runs** end-to-end with a single `docker compose up --build`
+- ⚡ Pulls study JSON instantly from ClinicalTrials.gov  
+- 🧠 Predicts success probability + MC Dropout uncertainty  
+- 💻 Clean React + Vite UI (mobile-responsive)  
+- 🔌 FastAPI backend with type hints and PyTest coverage  
+- 🐳 Runs end-to-end with a single `docker compose up --build`
 
 ---
 
 ## 🏗️ Project Architecture
-
 ```
 lucent/
 |
@@ -54,7 +69,7 @@ lucent/
 1. User enters an NCTID via the frontend or `/predict` endpoint.
 2. Backend fetches trial data from ClinicalTrials.gov.
 3. Data is parsed, preprocessed, and embedded.
-4. A trained multi-modal neural network returns a success probability and uncertainty.
+4. A custom-trained multi-modal neural network returns a success probability and MC Dropout uncertainty.
 
 ---
 
@@ -62,7 +77,7 @@ lucent/
 ## 🏁 Local Development Setup
 
 <details>
-<summary><strong>Model card (v0.2.0)</strong></summary>
+<summary><strong>Model Card (v0.2.0)</strong></summary>
 
 | Metric | Value |
 |--------|-------|
