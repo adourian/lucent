@@ -5,12 +5,71 @@ from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
 import yfinance as yf
-from typing import Literal
+from typing import Literal, Optional, Union
+from pydantic import BaseModel
 
 from app.core.parsing import parse_trial_json
 from app.core.preprocessing import preprocess_trial
 from app.services.clinicaltrials_api import fetch_nctid_data_async, fetch_nctid_data
 from app.core.predict import TrialPredictor
+
+
+# --- Response Models ---
+
+class PredictionResponse(BaseModel):
+    nctid: str
+    phase: str
+    sponsor: str
+    title: str
+    status: str
+    diseases: str
+    enrollment: Union[int, str]
+    completion_date: str
+    probability: float
+    uncertainty: float
+    deterministic: float
+    label: int
+
+
+class PricePoint(BaseModel):
+    date: str
+    close: float
+
+
+class FinanceMetadata(BaseModel):
+    marketCap: Optional[int] = None
+    enterpriseValue: Optional[int] = None
+    trailingPE: Optional[float] = None
+    forwardPE: Optional[float] = None
+    pegRatio: Optional[float] = None
+    priceToBook: Optional[float] = None
+    beta: Optional[float] = None
+    dividendYield: Optional[float] = None
+    returnOnEquity: Optional[float] = None
+    revenueGrowth: Optional[float] = None
+    grossMargins: Optional[float] = None
+    operatingMargins: Optional[float] = None
+    profitMargins: Optional[float] = None
+    totalRevenue: Optional[int] = None
+    ebitda: Optional[int] = None
+    totalDebt: Optional[int] = None
+    currentRatio: Optional[float] = None
+    quickRatio: Optional[float] = None
+    sector: Optional[str] = None
+    industry: Optional[str] = None
+    summary: Optional[str] = None
+    fiftyTwoWeekHigh: Optional[float] = None
+    fiftyTwoWeekLow: Optional[float] = None
+
+
+class FinanceResponse(BaseModel):
+    ticker: str
+    range: str
+    interval: str
+    prices: list[PricePoint]
+    metadata: FinanceMetadata
+
+# --- ------------------- ---
 
 # Load model once at startup
 predictor = TrialPredictor(model_path="app/models/model_weights.pth")
@@ -66,8 +125,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/predict/{nctid}", include_in_schema=False)
-@app.head("/predict/{nctid}")
+@app.get("/predict/{nctid}", response_model=PredictionResponse)
+@app.head("/predict/{nctid}", include_in_schema=False)
 async def predict_trial(nctid: str):
 
     nctid = nctid.strip().upper()
@@ -125,7 +184,7 @@ async def predict_trial(nctid: str):
                     cache_key, 
                     json.dumps(final_response)
                 )
-                print(f"[Cache] SET for {nctid} in {ENV}. TTL 24 hours.")
+                print(f"[Cache] SET for {nctid} in {ENV}. No TTL (cached indefinitely).")
             except Exception as e:
                 print(f"Redis 'set' error: {e}")
         # --- CACHE SET ---
@@ -133,10 +192,10 @@ async def predict_trial(nctid: str):
         return final_response
     
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
     
 
-@app.get("/finance/{ticker}")
+@app.get("/finance/{ticker}", response_model=FinanceResponse)
 async def get_stock_data(
     ticker: str,
     range: Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"] = Query("1mo"),
