@@ -362,7 +362,7 @@ function App() {
                             value={nctid}
                             onChange={(e) => setNctid(e.target.value)}
                             onKeyPress={handleKeyPress}
-                            className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-xl text-base font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                            className="w-full px-5 py-4 bg-white text-slate-900 border-2 border-slate-200 rounded-xl text-base font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
                           />
                           <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
                             <Activity className="w-5 h-5 text-slate-400" />
@@ -531,7 +531,7 @@ function App() {
                                   value={stockRange}
                                   onChange={(e) => setStockRange(e.target.value)}
                                   disabled={stockLoading}
-                                  className="text-sm border border-slate-300 rounded-lg px-2 py-1 hover:bg-slate-100 focus:ring-2 focus:ring-sky-300"
+                                  className="text-sm text-slate-900 bg-white border border-slate-300 rounded-lg px-2 py-1 hover:bg-slate-100 focus:ring-2 focus:ring-sky-300"
                                 >
                                   {["5d", "1mo", "3mo", "6mo", "1y", "5y", "10y", "max"].map((r) => (
                                     <option key={r} value={r}>{r}</option>
