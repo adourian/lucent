@@ -1,6 +1,8 @@
 import os
 import redis
 import json
+import httpx
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
@@ -10,7 +12,7 @@ from pydantic import BaseModel
 
 from app.core.parsing import parse_trial_json
 from app.core.preprocessing import preprocess_trial
-from app.services.clinicaltrials_api import fetch_nctid_data_async, fetch_nctid_data
+from app.services.clinicaltrials_api import fetch_nctid_data_async
 from app.core.predict import TrialPredictor
 
 
@@ -71,13 +73,25 @@ class FinanceResponse(BaseModel):
 
 # --- ------------------- ---
 
-# Load model once at startup
-predictor = TrialPredictor(model_path="app/models/model_weights.pth")
+app_state: dict = {}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app_state["predictor"] = TrialPredictor(model_path="app/models/model_weights.pth")
+    app_state["http_client"] = httpx.AsyncClient(
+        timeout=httpx.Timeout(10.0),
+        limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
+    )
+    yield
+    await app_state["http_client"].aclose()
+
 
 app = FastAPI(
     title="Lucent",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 
@@ -125,6 +139,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
 @app.get("/predict/{nctid}", response_model=PredictionResponse)
 @app.head("/predict/{nctid}", include_in_schema=False)
 async def predict_trial(nctid: str):
@@ -152,12 +171,12 @@ async def predict_trial(nctid: str):
     # --- END: CACHE CHECK ---
 
     try:
-        trial_data = await fetch_nctid_data_async(nctid)
+        trial_data = await fetch_nctid_data_async(nctid, app_state["http_client"])
         parsed = parse_trial_json(trial_data)
         prepped = preprocess_trial(parsed)
         result = await run_in_threadpool(
-            predictor.predict_with_uncertainty, 
-            prepped, 
+            app_state["predictor"].predict_with_uncertainty,
+            prepped,
             n_samples=500
         )
 
@@ -191,6 +210,10 @@ async def predict_trial(nctid: str):
 
         return final_response
     
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            raise HTTPException(status_code=404, detail=f"Trial '{nctid}' not found on ClinicalTrials.gov.")
+        raise HTTPException(status_code=502, detail=f"ClinicalTrials.gov returned an error (status {e.response.status_code}).")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     

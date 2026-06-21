@@ -1,3 +1,4 @@
+import threading
 import torch
 import numpy as np
 
@@ -22,6 +23,9 @@ class TrialPredictor:
 
         self.model.to(self.device)
         self.model.eval()
+        torch.set_num_threads(4)
+
+        self._lock = threading.Lock()
 
         # Embedder
         self.embedder = TrialEmbedder(device=self.device)
@@ -96,62 +100,61 @@ class TrialPredictor:
         }
     
     def predict_with_uncertainty(self, trial_dict: dict, n_samples: int = 20) -> dict:
-        # Encode features once
-        sponsor_emb = self.embedder.encode_sponsors([trial_dict['sponsor']])
-        disease_emb = self.embedder.encode_diseases([trial_dict['diseases']])
-        incl_emb = self.embedder.encode_text_fields([trial_dict['inclusion_criteria']])
-        excl_emb = self.embedder.encode_text_fields([trial_dict['exclusion_criteria']])
-        summary_emb = self.embedder.encode_text_fields([trial_dict['description']])
-        phase_oh = self._encode_phase(trial_dict['phase'])
-        phase_tensor = torch.from_numpy(np.array(phase_oh, dtype=np.float32)).unsqueeze(0).to(self.device)
+        with self._lock:
+            # Encode features once
+            sponsor_emb = self.embedder.encode_sponsors([trial_dict['sponsor']])
+            disease_emb = self.embedder.encode_diseases([trial_dict['diseases']])
+            incl_emb = self.embedder.encode_text_fields([trial_dict['inclusion_criteria']])
+            excl_emb = self.embedder.encode_text_fields([trial_dict['exclusion_criteria']])
+            summary_emb = self.embedder.encode_text_fields([trial_dict['description']])
+            phase_oh = self._encode_phase(trial_dict['phase'])
+            phase_tensor = torch.from_numpy(np.array(phase_oh, dtype=np.float32)).unsqueeze(0).to(self.device)
 
+            # Move to device
+            sponsor_tensor = torch.tensor(sponsor_emb, dtype=torch.float32).to(self.device)
+            disease_tensor = torch.tensor(disease_emb, dtype=torch.float32).to(self.device)
+            incl_tensor = torch.tensor(incl_emb, dtype=torch.float32).to(self.device)
+            excl_tensor = torch.tensor(excl_emb, dtype=torch.float32).to(self.device)
+            summary_tensor = torch.tensor(summary_emb, dtype=torch.float32).to(self.device)
 
-        # Move to device
-        sponsor_tensor = torch.tensor(sponsor_emb, dtype=torch.float32).to(self.device)
-        disease_tensor = torch.tensor(disease_emb, dtype=torch.float32).to(self.device)
-        incl_tensor = torch.tensor(incl_emb, dtype=torch.float32).to(self.device)
-        excl_tensor = torch.tensor(excl_emb, dtype=torch.float32).to(self.device)
-        summary_tensor = torch.tensor(summary_emb, dtype=torch.float32).to(self.device)
+            # Deterministic prediction
+            self.model.eval()
+            with torch.no_grad():
+                det_output = self.model(sponsor_tensor, disease_tensor, incl_tensor, excl_tensor, summary_tensor, phase_tensor)
+                deterministic_prob = torch.sigmoid(det_output).item()
 
-       # Deterministic prediction
-        self.model.eval()
-        with torch.no_grad():
-            det_output = self.model(sponsor_tensor, disease_tensor, incl_tensor, excl_tensor, summary_tensor, phase_tensor)
-            deterministic_prob = torch.sigmoid(det_output).item()
+            # Expand all input tensors to create a batch of size n_samples
+            #    .expand() is very efficient; it doesn't actually copy data.
+            sponsor_batch = sponsor_tensor.expand(n_samples, -1)
+            disease_batch = disease_tensor.expand(n_samples, -1)
+            incl_batch = incl_tensor.expand(n_samples, -1)
+            excl_batch = excl_tensor.expand(n_samples, -1)
+            summary_batch = summary_tensor.expand(n_samples, -1)
+            phase_batch = phase_tensor.expand(n_samples, -1)
 
+            # Enable MC dropout
+            self.model.enable_mc_dropout()
+            with torch.no_grad():
+                out_batch = self.model(sponsor_batch, disease_batch, incl_batch, excl_batch, summary_batch, phase_batch)
 
-        # Expand all input tensors to create a batch of size n_samples
-        #    .expand() is very efficient; it doesn't actually copy data.
-        sponsor_batch = sponsor_tensor.expand(n_samples, -1)
-        disease_batch = disease_tensor.expand(n_samples, -1)
-        incl_batch = incl_tensor.expand(n_samples, -1)
-        excl_batch = excl_tensor.expand(n_samples, -1)
-        summary_batch = summary_tensor.expand(n_samples, -1)
-        phase_batch = phase_tensor.expand(n_samples, -1)
+                # Output is shape [n_samples, 1]. We apply sigmoid and convert to a flat numpy array.
+                preds_tensor = torch.sigmoid(out_batch)
+                preds_np = preds_tensor.cpu().numpy().flatten()
 
-        # Enable MC dropout
-        self.model.enable_mc_dropout()
-        with torch.no_grad():
-            out_batch = self.model(sponsor_batch, disease_batch, incl_batch, excl_batch, summary_batch, phase_batch)
-            
-            # Output is shape [n_samples, 1]. We apply sigmoid and convert to a flat numpy array.
-            preds_tensor = torch.sigmoid(out_batch)
-            preds_np = preds_tensor.cpu().numpy().flatten()
+            # Reset model to evaluation mode
+            self.model.eval()
 
-        # Reset model to evaluation mode
-        self.model.eval()
+            # Calculate stats
+            prob_mean = preds_np.mean()
+            prob_std = preds_np.std()
+            label = int(prob_mean >= 0.5)
 
-        # 5. Calculate stats (unchanged)
-        prob_mean = preds_np.mean()
-        prob_std = preds_np.std()
-        label = int(prob_mean >= 0.5)
-
-        return {
-            "probability": round(float(prob_mean), 4),
-            "uncertainty": round(float(prob_std), 4),
-            "label": label,
-            "deterministic": round(deterministic_prob, 4)
-        }
+            return {
+                "probability": round(float(prob_mean), 4),
+                "uncertainty": round(float(prob_std), 4),
+                "label": label,
+                "deterministic": round(deterministic_prob, 4)
+            }
     
 if __name__ == "__main__":
     from app.core.parsing import parse_trial_json

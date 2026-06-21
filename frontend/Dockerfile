@@ -1,4 +1,4 @@
-FROM node:24.1-bookworm-slim
+FROM node:22-bookworm-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && apt-get clean \
@@ -14,7 +14,7 @@ ENV VITE_API_BASE=${VITE_API_BASE}
 
 ENV PNPM_HOME=/pnpm
 
-ENV PATH="$PNPM_HOME:$PATH"
+ENV PATH="$PNPM_HOME/bin:$PATH"
 
 RUN corepack enable
 

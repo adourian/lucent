@@ -7,4 +7,3 @@ scikit-learn
 httpx
 yfinance
 redis
-wheel
