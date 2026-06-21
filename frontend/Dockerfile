@@ -1,4 +1,4 @@
-FROM node:24.1-bookworm-slim
+FROM node:20-bookworm-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && apt-get clean \
@@ -20,7 +20,7 @@ RUN corepack enable
 
 COPY ./ /app/
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
