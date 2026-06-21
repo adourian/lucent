@@ -17,7 +17,7 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 
 # Install PyTorch with CPU support
-RUN pip install --no-cache-dir "torch==2.12.1" "torchvision==0.27.1" "torchaudio==2.11.0" --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir "torch>=2.6.0" torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 # Install other Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
