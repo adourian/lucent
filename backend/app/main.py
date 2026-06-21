@@ -1,6 +1,7 @@
 import os
 import redis
 import json
+import httpx
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
@@ -125,6 +126,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
 @app.get("/predict/{nctid}", response_model=PredictionResponse)
 @app.head("/predict/{nctid}", include_in_schema=False)
 async def predict_trial(nctid: str):
@@ -191,6 +197,10 @@ async def predict_trial(nctid: str):
 
         return final_response
     
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            raise HTTPException(status_code=404, detail=f"Trial '{nctid}' not found on ClinicalTrials.gov.")
+        raise HTTPException(status_code=502, detail=f"ClinicalTrials.gov returned an error (status {e.response.status_code}).")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     

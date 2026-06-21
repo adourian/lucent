@@ -12,9 +12,8 @@ async def fetch_nctid_data_async(nctid: str):
     
     async with httpx.AsyncClient() as client:
         response = await client.get(base_url)
-    
-    if response.status_code != 200:
-        raise Exception(f"ClinicalTrials.gov API returned status {response.status_code}")
+
+    response.raise_for_status()
     
     data = response.json()
     return data
