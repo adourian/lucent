@@ -4,23 +4,22 @@ from typing import List, Dict
 
 
 
-async def fetch_nctid_data_async(nctid: str):
+async def fetch_nctid_data_async(nctid: str, client: httpx.AsyncClient):
     """
     Fetches trial data from ClinicalTrials.gov v2 API asynchronously.
     """
     base_url = f"https://clinicaltrials.gov/api/v2/studies/{nctid}"
-    
-    async with httpx.AsyncClient() as client:
-        response = await client.get(base_url)
 
+    response = await client.get(base_url)
     response.raise_for_status()
-    
+
     data = response.json()
     return data
 
 
 
 
+# For dev scripts only (e.g. predict.py __main__). Not used by the API server.
 def fetch_nctid_data(nctid: str):
     """
     Fetches trial data from ClinicalTrials.gov v2 API given an NCTID.

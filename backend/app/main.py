@@ -2,6 +2,7 @@ import os
 import redis
 import json
 import httpx
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
@@ -11,7 +12,7 @@ from pydantic import BaseModel
 
 from app.core.parsing import parse_trial_json
 from app.core.preprocessing import preprocess_trial
-from app.services.clinicaltrials_api import fetch_nctid_data_async, fetch_nctid_data
+from app.services.clinicaltrials_api import fetch_nctid_data_async
 from app.core.predict import TrialPredictor
 
 
@@ -72,13 +73,25 @@ class FinanceResponse(BaseModel):
 
 # --- ------------------- ---
 
-# Load model once at startup
-predictor = TrialPredictor(model_path="app/models/model_weights.pth")
+app_state: dict = {}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app_state["predictor"] = TrialPredictor(model_path="app/models/model_weights.pth")
+    app_state["http_client"] = httpx.AsyncClient(
+        timeout=httpx.Timeout(10.0),
+        limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
+    )
+    yield
+    await app_state["http_client"].aclose()
+
 
 app = FastAPI(
     title="Lucent",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 
@@ -158,12 +171,12 @@ async def predict_trial(nctid: str):
     # --- END: CACHE CHECK ---
 
     try:
-        trial_data = await fetch_nctid_data_async(nctid)
+        trial_data = await fetch_nctid_data_async(nctid, app_state["http_client"])
         parsed = parse_trial_json(trial_data)
         prepped = preprocess_trial(parsed)
         result = await run_in_threadpool(
-            predictor.predict_with_uncertainty, 
-            prepped, 
+            app_state["predictor"].predict_with_uncertainty,
+            prepped,
             n_samples=500
         )
 
