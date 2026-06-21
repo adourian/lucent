@@ -39,8 +39,5 @@
   "main": "eslint.config.js",
   "keywords": [],
   "author": "Kari Adourian",
-  "license": "ISC",
-  "pnpm": {
-    "onlyBuiltDependencies": ["@tailwindcss/oxide", "esbuild"]
-  }
+  "license": "ISC"
 }
