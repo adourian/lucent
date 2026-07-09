@@ -14,7 +14,7 @@ Lucent is an end-to-end machine learning system for predicting clinical trial ou
 
 ## 🧠 Model & Training
 
-The prediction model served by Lucent was custom-trained by the author using a multi-modal neural network combining:
+The prediction model served by Lucent was custom-trained using a multi-modal neural network combining:
 
 - Clinical text embeddings (MedBERT, BioSimCSE)
 - Molecular representations (ChemBERTa on SMILES)
