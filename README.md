@@ -6,7 +6,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 
-**👉 Live demo:** https://lucentlabs.vercel.app
+**👉 Live demo:** https://lucent.kariadourian.com/
 
 Lucent is an end-to-end machine learning system for predicting clinical trial outcomes from public trial data, combining multimodal neural networks with Monte Carlo Dropout for uncertainty estimation.
 

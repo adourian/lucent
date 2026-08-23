@@ -135,3 +135,7 @@ cython_debug/
 
 
 plan.txt
+
+
+.DS_Store
+backend/.DS_Store
