@@ -24,6 +24,7 @@ import {
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import AboutPage from "./AboutPage"; 
 import MetricDisplay from "./MetricDisplay";
+import RouteMetadata from "./RouteMetadata";
 
 function App() {
   // State variables for stock data and analysis
@@ -285,6 +286,7 @@ function App() {
 
   return (
     <Router>
+      <RouteMetadata />
       <Routes>
         <Route path="/" element={
           <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-sans flex flex-col">
