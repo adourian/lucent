@@ -13,6 +13,7 @@ type EstimateScaleStyle = CSSProperties & {
 
 const asPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
 const asPoints = (value: number) => `${(value * 100).toFixed(1)} pp`;
+const calibrationTicks = Array.from({ length: 21 }, (_, index) => index);
 
 function EstimateFigure({
   mcMean,
@@ -35,6 +36,11 @@ function EstimateFigure({
         uncertainty,
       )}.`}
     >
+      <div className="estimate-figure__instrument" aria-hidden="true">
+        <span>Inference signal</span>
+        <span className="mono">MC / 500 passes</span>
+      </div>
+
       <div className="estimate-readout">
         <div className="estimate-readout__metric">
           <span className="estimate-readout__label">Estimated probability</span>
@@ -54,7 +60,21 @@ function EstimateFigure({
       </div>
 
       <div className="estimate-scale" style={scaleStyle} aria-hidden="true">
+        <div className="estimate-scale__header">
+          <span>Probability scale</span>
+          <span className="mono">
+            {asPercent(lowerBound)}–{asPercent(upperBound)} · mean ± 1σ
+          </span>
+        </div>
         <div className="estimate-scale__plot">
+          <span className="estimate-scale__calibration">
+            {calibrationTicks.map((tick) => (
+              <i
+                className={tick % 5 === 0 ? "is-major" : undefined}
+                key={tick}
+              />
+            ))}
+          </span>
           <span className="estimate-scale__range" />
           <span className="estimate-scale__point" />
         </div>
@@ -68,11 +88,11 @@ function EstimateFigure({
       </div>
 
       <div className="estimate-legend" aria-hidden="true">
-        <span>
+        <span className="estimate-legend__item">
           <i className="estimate-legend__point" /> MC mean {asPercent(mcMean)}
         </span>
-        <span>
-          <i className="estimate-legend__range" /> MC mean ± 1σ
+        <span className="estimate-legend__item">
+          <i className="estimate-legend__range" /> Mean ± 1σ dropout span
         </span>
       </div>
 

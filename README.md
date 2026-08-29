@@ -1,46 +1,54 @@
 # Lucent
 
-[![CI](https://github.com/adourian/lucent/actions/workflows/ci.yml/badge.svg)](https://github.com/adourian/lucent/actions/workflows/ci.yml)
-[![Docker Pulls](https://img.shields.io/docker/pulls/adourian/lucent-backend?style=flat-square&color=0db7ed)](https://hub.docker.com/r/adourian/lucent-backend)
+[![Main CI](https://github.com/adourian/lucent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/adourian/lucent/actions/workflows/ci.yml)
+[![Dev CI](https://github.com/adourian/lucent/actions/workflows/ci-dev.yml/badge.svg?branch=dev)](https://github.com/adourian/lucent/actions/workflows/ci-dev.yml)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
+![Node.js](https://img.shields.io/badge/Node.js-22-315C2B.svg)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 
 **👉 Live demo:** [lucent.kariadourian.com](https://lucent.kariadourian.com/)
 
-Lucent is an end-to-end machine-learning system that estimates the probability of a favorable clinical trial outcome at the study's current development stage from public trial data. It combines a multimodal neural network with Monte Carlo dropout for uncertainty estimation.
+Lucent is an end-to-end machine-learning system that estimates the probability
+of a favorable clinical trial outcome at the study's current development stage
+from public trial data. It combines a multimodal neural network with Monte Carlo
+dropout for uncertainty estimation.
 
 ---
 
-## 🧠 Model & Training
+## Model and training
 
-The prediction model served by Lucent was custom-trained using a multi-modal neural network combining:
+The deployed v0.3.0 model uses a multimodal neural network with six inputs:
 
-- Clinical text embeddings (MedBERT, BioSimCSE)
-- Molecular representations (ChemBERTa on SMILES)
-- Structured trial metadata (phase, drug count, etc.)
+- Lead-sponsor text encoded with all-MiniLM-L6-v2
+- Conditions encoded with MedBERT
+- Brief-summary, inclusion, and exclusion text encoded with BioSimCSE-BioLinkBERT
+- A categorical trial-phase vector
 
-Each modality is processed through dedicated neural towers and fused via attention before final prediction.  
-Uncertainty is estimated at inference time using **Monte Carlo Dropout**.
+The five text representations pass through modality-specific towers and attention
+fusion. A learned phase representation joins the fused text representation before
+the prediction head. At inference time, 500 stochastic dropout passes produce the
+reported mean probability and MC-dropout dispersion.
 
-👉 Full model training, data processing, experiments, and results are documented here:  
-**[repo](https://github.com/adourian/Clinical-Trial-Outcomes)**
+Model training, data processing, experiments, and results are documented in the
+[model-development repository](https://github.com/adourian/Clinical-Trial-Outcomes).
 
-This repository contains the complete modeling pipeline, benchmarks, and architectural details.
-
----
-
-## 🚀 Features
-
-- ⚡ Pulls study JSON instantly from ClinicalTrials.gov  
-- 🧠 Predicts success probability + MC Dropout uncertainty  
-- 💻 Clean React + Vite UI (mobile-responsive)  
-- 🔌 FastAPI backend with type hints and PyTest coverage  
-- 🐳 Runs end-to-end with a single `docker compose up --build`
+That repository contains the complete modeling pipeline, benchmarks, and
+architectural details.
 
 ---
 
-## 🏗️ Project Architecture
+## Features
+
+- Retrieves public study records from ClinicalTrials.gov
+- Reports a favorable-outcome probability with MC-dropout dispersion
+- Presents trial, model, and optional sponsor-market context
+- Uses a React and Vite frontend with a typed FastAPI backend
+- Runs end to end with `docker compose up --build`
+
+---
+
+## Project architecture
 
 ```bash
 lucent/
@@ -71,12 +79,12 @@ lucent/
 1. User enters an NCTID via the frontend or `/predict` endpoint.
 2. Backend fetches trial data from ClinicalTrials.gov.
 3. Data is parsed, preprocessed, and embedded.
-4. A custom-trained multimodal neural network returns an estimated probability of a favorable trial outcome and MC-dropout dispersion.
+4. A custom-trained multimodal neural network returns an estimated probability
+   of a favorable trial outcome and MC-dropout dispersion.
 
 ---
 
-
-## 🏁 Local Development Setup
+## Local development
 
 <details>
 <summary><strong>Deployed model (v0.3.0)</strong></summary>
@@ -89,7 +97,7 @@ lucent/
 
 </details>
 
-### **Option 1 — Docker**  
+### Option 1 — Docker
 
 ```bash
 git clone https://github.com/adourian/lucent.git
@@ -102,9 +110,9 @@ docker compose up --build
 
 ---
 
-### **Option 2 — Run services manually**
+### Option 2 — Run services manually
 
-#### Back-end (FastAPI)  
+#### Back end (FastAPI)
 
 ```bash
 cd backend
@@ -114,11 +122,11 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload  # http://localhost:8000/docs
 ```
 
-#### Front-end (React + Vite)  
+#### Front end (React + Vite)
 
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev                    # http://localhost:5173
 ```
 
@@ -131,16 +139,27 @@ optional environment file and restart Vite:
 VITE_API_BASE=http://localhost:8000
 ```
 
-Open two terminals (one for each command set) and you’ll have a hot-reloading dev stack running locally.
+Open two terminals (one for each command set) and you’ll have a hot-reloading dev
+stack running locally.
 
 ---
 
-## 📄 License
+## Continuous integration and deployment
+
+The `dev` and `main` workflows run backend tests and frontend linting, type
+checking, and a production build. Railway is responsible for building the service
+images from the repository Dockerfiles and deploying the connected branch after
+its required CI checks pass; GitHub Actions does not publish duplicate Docker
+images.
+
+---
+
+## License
 
 MIT
 
 ---
 
-## 📬 Contact
+## Contact
 
 kari.adourian@gmail.com

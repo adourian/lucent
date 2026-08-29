@@ -11,8 +11,8 @@ export interface SponsorContextProps {
 
 export function SponsorContext({ sponsor, className }: SponsorContextProps) {
   const ticker = getSponsorTicker(sponsor);
-  const [isOpen, setIsOpen] = useState(Boolean(ticker));
-  const [hasOpened, setHasOpened] = useState(Boolean(ticker));
+  const [isOpen, setIsOpen] = useState(false);
+  const [hasOpened, setHasOpened] = useState(false);
   const sponsorName = sponsor?.trim() || "Sponsor not reported";
   const rootClassName = ["sponsor-context", className]
     .filter(Boolean)
@@ -32,8 +32,8 @@ export function SponsorContext({ sponsor, className }: SponsorContextProps) {
         <span className="sponsor-context__summary-copy">
           <span className="sponsor-context__title">
             {ticker
-              ? `External market data for ${ticker}`
-              : "Market data availability"}
+              ? "Market data available"
+              : "No mapped market data"}
           </span>
         </span>
         <span className="sponsor-context__identity">

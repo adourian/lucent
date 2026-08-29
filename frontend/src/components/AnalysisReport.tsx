@@ -155,10 +155,13 @@ const AnalysisReport = forwardRef<HTMLElement, AnalysisReportProps>(
           </div>
         </section>
 
-        <section className="report-section" aria-labelledby="sponsor-heading">
+        <section
+          className="report-section report-section--secondary"
+          aria-labelledby="sponsor-heading"
+        >
           <div className="report-section__heading">
-            <p className="section-index">03 / External data</p>
-            <h2 id="sponsor-heading">Market context</h2>
+            <p className="section-index">03 / Secondary context</p>
+            <h2 id="sponsor-heading">Sponsor and market context</h2>
           </div>
           <SponsorContext
             key={result.generatedAt}
