@@ -535,13 +535,15 @@ p, h1, h2, h3, h4, dl, dd, figure { margin: 0; }
 
 .network-path__flow {
   display: grid;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
   margin-top: 12px;
   align-items: stretch;
 }
 
-.network-path__flow--text { grid-template-columns: minmax(112px, 0.82fr) 18px minmax(140px, 1.08fr) 18px minmax(150px, 1.1fr); }
-.network-path__flow--phase { grid-template-columns: minmax(170px, 0.82fr) 18px minmax(0, 1.18fr); }
+.network-path__flow--text { grid-template-columns: minmax(0, 0.82fr) 18px minmax(0, 1.08fr) 18px minmax(0, 1.1fr); }
+.network-path__flow--phase { grid-template-columns: minmax(0, 0.82fr) 18px minmax(0, 1.18fr); }
 
 .network-node {
   min-width: 0;
