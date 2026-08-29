@@ -61,7 +61,7 @@ const AnalysisReport = forwardRef<HTMLElement, AnalysisReportProps>(
                 View on ClinicalTrials.gov (opens in a new tab)
               </span>
             </a>
-            <span>Received {formatGeneratedTime(result.generatedAt)}</span>
+            <span>Analyzed at {formatGeneratedTime(result.generatedAt)}</span>
           </div>
 
           <h1 id="report-title">{title}</h1>
