@@ -12,7 +12,9 @@ type EstimateScaleStyle = CSSProperties & {
 };
 
 const asPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
-const asPoints = (value: number) => `${(value * 100).toFixed(1)} pp`;
+const asPointValue = (value: number) => (value * 100).toFixed(1);
+const asPoints = (value: number) =>
+  `${asPointValue(value)} percentage points`;
 const calibrationTicks = Array.from({ length: 21 }, (_, index) => index);
 
 function EstimateFigure({
@@ -42,19 +44,20 @@ function EstimateFigure({
       </div>
 
       <div className="estimate-readout">
-        <div className="estimate-readout__metric">
+        <div className="estimate-readout__metric estimate-readout__metric--primary">
           <span className="estimate-readout__label">Estimated probability</span>
-          <strong className="estimate-readout__value mono">
+          <strong className="estimate-readout__value estimate-readout__value--primary mono">
             {asPercent(mcMean)}
           </strong>
         </div>
-        <div className="estimate-readout__metric">
+        <div className="estimate-readout__metric estimate-readout__metric--dispersion">
           <span className="estimate-readout__label">
-            MC-dropout dispersion <span aria-hidden="true">(σ)</span>
+            Variation across model passes <span aria-hidden="true">(σ)</span>
             <span className="sr-only">standard deviation</span>
           </span>
-          <strong className="estimate-readout__value mono">
-            {asPoints(uncertainty)}
+          <strong className="estimate-readout__value estimate-readout__value--dispersion mono">
+            <span>{asPointValue(uncertainty)}</span>
+            <span className="estimate-readout__unit">percentage points</span>
           </strong>
         </div>
       </div>

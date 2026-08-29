@@ -74,7 +74,12 @@ function AppShell({ children, onBrandActivate }: AppShellProps) {
               aria-label="Source code (opens in a new tab)"
             >
               <Github aria-hidden="true" size={16} strokeWidth={1.8} />
-              <span className="site-nav__source-label">Source</span>
+              <span className="site-nav__source-label site-nav__source-label--desktop">
+                Source
+              </span>
+              <span className="site-nav__source-label site-nav__source-label--mobile">
+                Code
+              </span>
             </a>
           </nav>
         </div>

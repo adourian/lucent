@@ -139,8 +139,9 @@ export function formatGeneratedTime(value: string | null | undefined): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Time unavailable";
 
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
+    hourCycle: "h23",
     minute: "2-digit",
   }).format(date);
 }
