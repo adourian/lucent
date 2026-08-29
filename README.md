@@ -6,9 +6,9 @@
 ![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 
-**👉 Live demo:** https://lucent.kariadourian.com/
+**👉 Live demo:** [lucent.kariadourian.com](https://lucent.kariadourian.com/)
 
-Lucent is an end-to-end machine learning system for predicting clinical trial outcomes from public trial data, combining multimodal neural networks with Monte Carlo Dropout for uncertainty estimation.
+Lucent is an end-to-end machine-learning system that estimates the probability of a favorable clinical trial outcome at the study's current development stage from public trial data. It combines a multimodal neural network with Monte Carlo dropout for uncertainty estimation.
 
 ---
 
@@ -24,7 +24,7 @@ Each modality is processed through dedicated neural towers and fused via attenti
 Uncertainty is estimated at inference time using **Monte Carlo Dropout**.
 
 👉 Full model training, data processing, experiments, and results are documented here:  
-**https://github.com/adourian/Clinical-Trial-Outcomes**
+**[repo](https://github.com/adourian/Clinical-Trial-Outcomes)**
 
 This repository contains the complete modeling pipeline, benchmarks, and architectural details.
 
@@ -41,7 +41,8 @@ This repository contains the complete modeling pipeline, benchmarks, and archite
 ---
 
 ## 🏗️ Project Architecture
-```
+
+```bash
 lucent/
 |
 ├── backend/
@@ -66,10 +67,11 @@ lucent/
 ```
 
 **Flow:**
+
 1. User enters an NCTID via the frontend or `/predict` endpoint.
 2. Backend fetches trial data from ClinicalTrials.gov.
 3. Data is parsed, preprocessed, and embedded.
-4. A custom-trained multi-modal neural network returns a success probability and MC Dropout uncertainty.
+4. A custom-trained multimodal neural network returns an estimated probability of a favorable trial outcome and MC-dropout dispersion.
 
 ---
 
@@ -77,31 +79,33 @@ lucent/
 ## 🏁 Local Development Setup
 
 <details>
-<summary><strong>Model Card (v0.2.0)</strong></summary>
+<summary><strong>Deployed model (v0.3.0)</strong></summary>
 
 | Metric | Value |
-|--------|-------|
-| Training set | 17 500 trials (NCTs) |
-| Val. accuracy | **70 %** (macro) |
-| Monte-Carlo σ | ~0.09 |
+| -------- | ------- |
+| Training corpus | 33K trials |
+| Inference | 500 MC-dropout passes |
+| Output | Mean probability and MC-dropout dispersion |
 
 </details>
 
-
 ### **Option 1 — Docker**  
+
 ```bash
 git clone https://github.com/adourian/lucent.git
 cd lucent
 docker compose up --build
 ```
-* API docs → <http://localhost:8000/docs>  
-* Front-end UI → <http://localhost:3000>
+
+- API docs → <http://localhost:8000/docs>
+- Front-end UI → <http://localhost:3000>
 
 ---
 
 ### **Option 2 — Run services manually**
 
 #### Back-end (FastAPI)  
+
 ```bash
 cd backend
 python -m venv .venv
@@ -111,17 +115,17 @@ uvicorn app.main:app --reload  # http://localhost:8000/docs
 ```
 
 #### Front-end (React + Vite)  
+
 ```bash
 cd frontend
 npm install
-
-# Create .env file for local development
-echo "VITE_API_BASE=http://localhost:8000" > .env
-
 npm run dev                    # http://localhost:5173
 ```
 
-**Important:** The frontend needs `VITE_API_BASE` environment variable to connect to the backend. The command above creates the `.env` file automatically, or you can create it manually:
+The Vite development server proxies prediction and finance requests to the local
+back-end on `http://127.0.0.1:8000`. To use a different API host, create an
+optional environment file and restart Vite:
+
 ```env
 # frontend/.env
 VITE_API_BASE=http://localhost:8000
