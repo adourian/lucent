@@ -11,24 +11,24 @@ type PageMetadata = {
 };
 
 const homeMetadata: PageMetadata = {
-  title: "Lucent | AI Clinical Trial Prediction Platform",
+  title: "Lucent | Clinical Trial Prediction",
   description:
-    "An open-source Clinical Intelligence Platform. Lucent fuses MedBERT, BioSimCSE, and all-MiniLM embeddings to forecast trial Probability of Success (PoS) with calibrated uncertainty estimation.",
+    "Lucent retrieves ClinicalTrials.gov records and estimates the probability of a favorable trial outcome, with MC-dropout dispersion.",
   canonical: "https://lucent.kariadourian.com/",
-  openGraphTitle: "Lucent | Clinical Trial Intelligence",
+  openGraphTitle: "Lucent | Clinical Trial Prediction",
   openGraphDescription:
-    "An open-source Clinical Intelligence Platform. Lucent fuses MedBERT, BioSimCSE, and all-MiniLM embeddings to forecast trial Probability of Success (PoS) with calibrated uncertainty estimation.",
+    "A clinical trial outcome model with explicit MC-dropout variability and source-aligned technical context.",
   openGraphUrl: "https://lucent.kariadourian.com/",
 };
 
 const aboutMetadata: PageMetadata = {
-  title: "About Lucent | Clinical Trial Intelligence",
+  title: "Lucent Model Note | Data, Architecture, and Limitations",
   description:
-    "Learn how Lucent combines biomedical language models, multimodal feature engineering, attention-based fusion, and calibrated uncertainty to forecast clinical trial outcomes.",
+    "Technical documentation for Lucent's trial-outcome target, registry inputs, neural architecture, MC-dropout estimation, limitations, and freshness.",
   canonical: "https://lucent.kariadourian.com/about",
-  openGraphTitle: "About Lucent | Clinical Trial Intelligence",
+  openGraphTitle: "Lucent Model Note",
   openGraphDescription:
-    "Learn how Lucent combines biomedical language models, multimodal feature engineering, attention-based fusion, and calibrated uncertainty to forecast clinical trial outcomes.",
+    "Target definition, data, architecture, uncertainty methodology, and limitations for Lucent.",
   openGraphUrl: "https://lucent.kariadourian.com/about",
 };
 

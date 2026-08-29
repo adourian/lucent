@@ -1,302 +1,367 @@
-import { Database, BarChart3, Target, Activity, Brain, Cpu, Shield, Globe2 } from "lucide-react";
-import { Link } from "react-router-dom";
-import architectureImage from "./assets/architecture.png";
+import AppShell from "./components/AppShell";
+import {
+  InferenceProtocolDiagram,
+  ModelArchitectureDiagram,
+} from "./components/ModelDiagrams";
 
 interface AboutPageProps {
   modelStats: {
-    avgProcessingTime: number;
     modelVersion: string;
     lastUpdated: string;
     datasetSize: string;
-    accuracy: string;
   };
 }
 
+const sections = [
+  ["problem", "Problem"],
+  ["data", "Data and representation"],
+  ["architecture", "Architecture"],
+  ["uncertainty", "Uncertainty"],
+  ["limitations", "Scope and limitations"],
+  ["freshness", "Freshness"],
+  ["source", "Source"],
+] as const;
+
 const AboutPage = ({ modelStats }: AboutPageProps) => {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-sans">
-      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/60 shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              {/* The Logo Container */}
-              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-slate-100">
-                 <img src="/vite.svg" alt="Lucent Logo" className="w-8 h-8" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-transparent">
-                  Lucent
-                </h1>
-                <p className="text-sm text-slate-600 -mt-1 font-medium">
-                  Clinical Intelligence Platform
-                </p>
-              </div>
-            </div>
-
-            <nav className="flex items-center space-x-8">
-              <Link 
-                to="/" 
-                className="text-slate-700 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center space-x-2"
-              >
-                <Activity className="w-4 h-4" />
-                <span>Back to Analysis</span>
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-slate-900 mb-4">
-            Advanced AI for Clinical Trial Intelligence
-          </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            Leveraging state-of-the-art machine learning to deliver actionable insights 
-            for biotech investment decisions with quantified uncertainty.
+    <AppShell>
+      <main className="model-note" id="main-content">
+        <header className="model-note__header">
+          <p className="model-note__eyebrow">Model note</p>
+          <h1>How Lucent estimates clinical trial outcomes</h1>
+          <p className="model-note__lede">
+            Lucent retrieves a public trial record from ClinicalTrials.gov,
+            encodes selected registry fields, and applies a multimodal neural
+            network. The output estimates the probability of a favorable outcome
+            at the trial&apos;s current development stage, with MC-dropout variation.
+            It is not an observed result or a causal conclusion.
           </p>
-        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200 text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
-              <Globe2 className="w-6 h-6 text-white" />
+          <dl
+            className="model-note__summary"
+            aria-label="Deployment metadata"
+          >
+            <div>
+              <dt>Model version</dt>
+              <dd>v{modelStats.modelVersion}</dd>
             </div>
-            <div className="text-2xl font-bold text-indigo-600 mb-1">Universal</div>
-            <div className="text-sm font-medium text-slate-600">
-              Works on any trial with a valid NCTID
+            <div>
+              <dt>Training corpus</dt>
+              <dd>{modelStats.datasetSize}</dd>
             </div>
-          </div>
+            <div>
+              <dt>Inference</dt>
+              <dd>500 MC passes</dd>
+            </div>
+            <div>
+              <dt>Output</dt>
+              <dd>Mean + MC σ</dd>
+            </div>
+          </dl>
+        </header>
 
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200 text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
-              <Database className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-3xl font-bold text-green-600 mb-1">{modelStats.datasetSize}</div>
-            <div className="text-sm font-medium text-slate-600">Training Dataset</div>
-          </div>
+        <div className="model-note__layout">
+          <nav className="model-note__toc" aria-label="On this page">
+            <p>On this page</p>
+            <ol>
+              {sections.map(([id, label]) => (
+                <li key={id}>
+                  <a href={`#${id}`}>{label}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
 
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200 text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
-              <Cpu className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-3xl font-bold text-purple-600 mb-1">v{modelStats.modelVersion}</div>
-            <div className="text-sm font-medium text-slate-600">Model Version</div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200 text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <div className="text-3xl font-bold text-orange-600 mb-1">{modelStats.avgProcessingTime}s</div>
-            <div className="text-sm font-medium text-slate-600">Processing Time</div>
-          </div>
-        </div>
-
-        {/* Technical Sections */}
-        <div className="space-y-12">
-          {/* Feature Engineering */}
-          <section className="bg-white rounded-3xl shadow-xl border border-slate-200/50 p-8">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mr-4">
-                <Database className="w-6 h-6 text-white" />
-              </div>
+          <article className="model-note__content">
+            <section
+              id="problem"
+              className="model-note__section"
+              aria-labelledby="problem-heading"
+            >
+              <p className="model-note__section-index" aria-hidden="true">
+                01
+              </p>
               <div>
-                <h3 className="text-2xl font-bold text-slate-900">Intelligent Feature Engineering</h3>
-                <p className="text-slate-600 font-medium">Multi-modal data processing pipeline</p>
-              </div>
-            </div>
-            
-            <p className="text-slate-700 leading-relaxed mb-6 text-lg">
-              Clinical trials are parsed from ClinicalTrials.gov and processed using a sophisticated 
-              multi-stage pipeline. Structured fields undergo domain-specific embedding while 
-              unstructured text is encoded using state-of-the-art biomedical transformers.
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h4 className="font-bold text-slate-900 mb-3">Structured Data</h4>
-                <ul className="text-slate-700 space-y-2">
-                  <li>• Sponsor embeddings via all-MiniLM-L6-v2</li>
-                  <li>• Diseases embeddings via MedBERT</li>
-                  <li>• Trial phase one-hot encoding</li>
-                </ul>
-              </div>
-              
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h4 className="font-bold text-slate-900 mb-3">Unstructured Text</h4>
-                <ul className="text-slate-700 space-y-2">
-                  <li>• Eligibility criteria via BioSimCSE</li>
-                  <li>• Trial Protocol summaries via BioSimCSE</li>
-                </ul>
-              </div>
-              
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h4 className="font-bold text-slate-900 mb-3">Feature Fusion</h4>
-                <ul className="text-slate-700 space-y-2">
-                  <li>• Multi-modal representation learning</li>
-                  <li>• Attention-based feature weighting</li>
-                </ul>
-              </div>
-            </div>
-          </section>
+                <h2 id="problem-heading">Problem</h2>
+                <p>
+                  Lucent estimates the modeled probability of a favorable trial
+                  outcome at the study&apos;s current development stage from
+                  information available in a ClinicalTrials.gov record. A user
+                  supplies an NCT identifier; the service retrieves the record,
+                  prepares the supported fields, and runs inference.
+                </p>
 
-          {/* Architecture Diagram */}
-          <section className="bg-white rounded-3xl shadow-xl border border-slate-200/50 p-8">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mr-4">
-                <Brain className="w-6 h-6 text-white" />
+                <aside className="model-note__callout" aria-label="Target definition">
+                  <p>
+                    <strong>Target definition.</strong> A positive label represents
+                    an outcome classified as successful for the trial&apos;s current
+                    development stage. This binary target is not a direct estimate
+                    of regulatory approval or overall clinical benefit.
+                  </p>
+                </aside>
               </div>
-              <div>
-                <h3 className="text-2xl font-bold text-slate-900">Neural Network Architecture</h3>
-                <p className="text-slate-600 font-medium">Multi-tower deep learning framework</p>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-8 border-2 border-slate-200">
-              <figure className="text-center">
-                <img
-                  src={architectureImage}
-                  alt="Lucent model architecture"
-                  className="max-w-full h-auto mx-auto rounded-xl shadow-lg"
-                  style={{ maxHeight: "500px", objectFit: "contain" }}
-                />
-                <figcaption className="text-sm text-slate-600 mt-4 font-medium max-w-3xl mx-auto">
-                  Multi-modal neural network with specialized towers for different data types, 
-                  attention-based fusion, and uncertainty quantification through Monte Carlo dropout.
-                </figcaption>
-              </figure>
-            </div>
-          </section>
+            </section>
 
-          {/* Deep Learning Architecture */}
-          <section className="bg-white rounded-3xl shadow-xl border border-slate-200/50 p-8">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mr-4">
-                <BarChart3 className="w-6 h-6 text-white" />
-              </div>
+            <section
+              id="data"
+              className="model-note__section"
+              aria-labelledby="data-heading"
+            >
+              <p className="model-note__section-index" aria-hidden="true">
+                02
+              </p>
               <div>
-                <h3 className="text-2xl font-bold text-slate-900">Deep Learning Architecture</h3>
-                <p className="text-slate-600 font-medium">Advanced neural network design</p>
-              </div>
-            </div>
-            
-            <p className="text-slate-700 leading-relaxed mb-6 text-lg">
-              The core architecture employs a multi-tower neural network with five independent 
-              processing streams for sponsor, disease, inclusion criteria, exclusion criteria, 
-              and protocol summaries. These representations are dynamically fused through learned 
-              attention mechanisms.
-            </p>
-            
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <h4 className="text-xl font-bold text-slate-900">Architecture Components</h4>
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <div>
-                      <div className="font-semibold text-slate-900">Specialized Towers</div>
-                      <div className="text-slate-600">Dedicated processing paths with dropout, batch normalization, and non-linearities</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <div>
-                      <div className="font-semibold text-slate-900">Attention Fusion</div>
-                      <div className="text-slate-600">Learned attention weights dynamically prioritize information sources</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <div>
-                      <div className="font-semibold text-slate-900">Prediction Head</div>
-                      <div className="text-slate-600">Final classification layer with sigmoid activation for probability output</div>
-                    </div>
-                  </div>
+                <h2 id="data-heading">Data and feature representation</h2>
+                <p>
+                  At inference time, Lucent retrieves the public trial record from
+                  ClinicalTrials.gov. Five text representations and an eight-position
+                  trial-phase vector enter the deployed network; the phase vector is
+                  one-hot when its value is recognized.
+                </p>
+
+                <div
+                  className="model-note__table-scroll"
+                  role="region"
+                  aria-label="Model input representations"
+                  tabIndex={0}
+                >
+                  <table className="model-note__table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Registry field</th>
+                        <th scope="col">Preparation</th>
+                        <th scope="col">Representation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">Lead sponsor</th>
+                        <td>Sponsor name as text</td>
+                        <td>all-MiniLM-L6-v2, 384 dimensions</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Conditions</th>
+                        <td>Cleaned and joined into one string</td>
+                        <td>MedBERT CLS embedding, 768 dimensions</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Brief summary</th>
+                        <td>Trimmed protocol summary</td>
+                        <td>BioSimCSE-BioLinkBERT, 768 dimensions</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Eligibility criteria</th>
+                        <td>Cleaned and split into inclusion and exclusion text</td>
+                        <td>Two BioSimCSE-BioLinkBERT representations</td>
+                      </tr>
+                      <tr>
+                        <th scope="row">Trial phase</th>
+                        <td>Normalized category</td>
+                        <td>Eight-position vector; one-hot when recognized</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-              </div>
-              
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-                <h4 className="text-xl font-bold text-slate-900 mb-4">Training Details</h4>
-                <div className="space-y-3 text-slate-700">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Dataset Size:</span>
-                    <span className="font-bold text-blue-600">{modelStats.datasetSize}</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="font-medium">Validation Accuracy:</span>
-                    <span className="font-bold text-emerald-600">{modelStats.accuracy}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Last Updated:</span>
-                    <span className="font-bold text-purple-600">{modelStats.lastUpdated}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
 
-          {/* Prediction & Uncertainty */}
-          <section className="bg-white rounded-3xl shadow-xl border border-slate-200/50 p-8">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mr-4">
-                <Target className="w-6 h-6 text-white" />
+                <aside className="model-note__callout" aria-label="Context fields">
+                  <p>
+                    <strong>Report context, not model input.</strong> Trial title,
+                    status, enrollment, and completion date are returned for
+                    display but are not passed into the prediction network.
+                  </p>
+                </aside>
               </div>
+            </section>
+
+            <section
+              id="architecture"
+              className="model-note__section"
+              aria-labelledby="architecture-heading"
+            >
+              <p className="model-note__section-index" aria-hidden="true">
+                03
+              </p>
               <div>
-                <h3 className="text-2xl font-bold text-slate-900">Prediction & Uncertainty Quantification</h3>
-                <p className="text-slate-600 font-medium">Probabilistic forecasting with confidence intervals</p>
+                <h2 id="architecture-heading">Architecture</h2>
+                <p>
+                  Five modality-specific towers encode the text fields, while a
+                  separate branch represents trial phase. The diagram summarizes
+                  how those paths are combined to produce the estimate.
+                </p>
+
+                <ModelArchitectureDiagram />
               </div>
-            </div>
-            
-            <p className="text-slate-700 leading-relaxed mb-6 text-lg">
-              Beyond point estimates, Lucent provides uncertainty quantification through Monte Carlo 
-              dropout sampling. This enables risk-aware decision making by quantifying model confidence 
-              in each prediction, critical for high-stakes investment decisions.
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200">
-                <h4 className="font-bold text-emerald-900 mb-3">Deterministic Prediction</h4>
-                <p className="text-emerald-800">
-                  Standard forward pass providing point estimate of trial success probability
+            </section>
+
+            <section
+              id="uncertainty"
+              className="model-note__section"
+              aria-labelledby="uncertainty-heading"
+            >
+              <p className="model-note__section-index" aria-hidden="true">
+                04
+              </p>
+              <div>
+                <h2 id="uncertainty-heading">Uncertainty estimation</h2>
+                <p>
+                  The prediction service enables dropout and evaluates 500
+                  stochastic copies of the same encoded trial. Their mean is the
+                  estimate presented in the report; their standard deviation is
+                  presented as MC-dropout dispersion.
+                </p>
+                <InferenceProtocolDiagram />
+                <dl className="model-note__definitions">
+                  <div>
+                    <dt>MC probability</dt>
+                    <dd>
+                      The arithmetic mean of 500 stochastic sigmoid outputs. This
+                      is the estimate presented in the report.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Uncertainty</dt>
+                    <dd>
+                      The standard deviation of those 500 outputs, presented as
+                      MC-dropout dispersion alongside the estimate.
+                    </dd>
+                  </div>
+                </dl>
+                <p>
+                  The standard deviation captures how much the output moves with
+                  dropout active; it is not a formal confidence interval.
                 </p>
               </div>
-              
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
-                <h4 className="font-bold text-blue-900 mb-3">Monte Carlo Sampling</h4>
-                <p className="text-blue-800">
-                  Multiple stochastic forward passes with dropout enabled to estimate uncertainty
+            </section>
+
+            <section
+              id="limitations"
+              className="model-note__section"
+              aria-labelledby="limitations-heading"
+            >
+              <p className="model-note__section-index" aria-hidden="true">
+                05
+              </p>
+              <div>
+                <h2 id="limitations-heading">Scope and limitations</h2>
+                <ul className="model-note__list">
+                  <li>
+                    Lucent estimates a binary favorable-outcome target for the
+                    trial&apos;s current development stage. It does not directly
+                    estimate regulatory approval or overall clinical benefit.
+                  </li>
+                  <li>
+                    An estimate reflects the registry record available when it was
+                    generated. Later record updates are not automatically
+                    incorporated into cached results.
+                  </li>
+                  <li>
+                    The model uses only the representations listed above. Trial
+                    status, enrollment, completion date, and financial data do
+                    not enter the network.
+                  </li>
+                  <li>
+                    Lucent reports the estimate and dropout variation; it does not
+                    infer causal drivers or trial-specific explanations.
+                  </li>
+                </ul>
+                <p className="model-note__disclaimer">
+                  Lucent is a research prototype. Its outputs are not medical or
+                  investment advice.
                 </p>
               </div>
-              
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
-                <h4 className="font-bold text-purple-900 mb-3">Risk Assessment</h4>
-                <p className="text-purple-800">
-                  Standard deviation used as confidence proxy for investment risk evaluation
-                </p>
+            </section>
+
+            <section
+              id="freshness"
+              className="model-note__section"
+              aria-labelledby="freshness-heading"
+            >
+              <p className="model-note__section-index" aria-hidden="true">
+                06
+              </p>
+              <div>
+                <h2 id="freshness-heading">Data and model freshness</h2>
+                <dl className="model-note__definitions">
+                  <div>
+                    <dt>Trial record</dt>
+                    <dd>
+                      ClinicalTrials.gov supplies the registry data used for
+                      analysis. A result reflects the record available to Lucent
+                      for that prediction.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Cached analysis</dt>
+                    <dd>
+                      Predictions may be served from cache and are not automatically
+                      recomputed when a registry record changes.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Deployed model</dt>
+                    <dd>
+                      Predictions use version {modelStats.modelVersion}, trained on
+                      {` ${modelStats.datasetSize}`}, until a newer model is deployed.
+                      The recorded update is {modelStats.lastUpdated}.
+                    </dd>
+                  </div>
+                </dl>
               </div>
-            </div>
-          </section>
+            </section>
+
+            <section
+              id="source"
+              className="model-note__section"
+              aria-labelledby="source-heading"
+            >
+              <p className="model-note__section-index" aria-hidden="true">
+                07
+              </p>
+              <div>
+                <h2 id="source-heading">Source and further detail</h2>
+                <p>
+                  The application source contains the deployed API, preprocessing,
+                  network definition, weights, and interface. The separate modeling
+                  repository documents the model-development and training work.
+                </p>
+                <ul className="model-note__sources">
+                  <li>
+                    <a
+                      href="https://github.com/adourian/lucent"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Lucent application source
+                      <span aria-hidden="true"> ↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://github.com/adourian/Clinical-Trial-Outcomes"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Model-development repository
+                      <span aria-hidden="true"> ↗</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://clinicaltrials.gov/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      ClinicalTrials.gov
+                      <span aria-hidden="true"> ↗</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </section>
+          </article>
         </div>
       </main>
-
-      {/* Enhanced Footer */}
-      <footer className="bg-white border-t border-slate-200 shadow-lg mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="text-slate-600 font-medium text-center md:text-left mb-4 md:mb-0">
-              Advanced machine learning for biotech investment intelligence
-            </div>
-            <div className="flex items-center space-x-6 text-sm text-slate-500">
-              <span className="font-medium">© 2025 Lucent Platform</span>
-              <span className="w-1 h-1 bg-slate-400 rounded-full"></span>
-              <span className="font-medium">MIT License</span>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </AppShell>
   );
 };
 

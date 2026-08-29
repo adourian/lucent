@@ -506,6 +506,7 @@ export const sponsorToTicker: Record<string, string> = {
     'Trius Therapeutics LLC, a subsidiary of Merck & Co., Inc. (Rahway, New Jersey USA)': 'MRK',
     'Neuralstem Inc.': 'CUR', // could also be PALI
     'Shanghai Zhangjiang Biotechnology Limited Company': '1349.HK',
+    'Mabwell (Shanghai) Bioscience Co., Ltd.': '688062.SS',
     'Pain Therapeutics': 'PTIE', // Delisted
     'Valneva Austria GmbH': 'VALN',
     'Tracon Pharmaceuticals Inc.': 'TCON',

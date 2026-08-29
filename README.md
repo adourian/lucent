@@ -1,47 +1,56 @@
 # Lucent
 
-[![CI](https://github.com/adourian/lucent/actions/workflows/ci.yml/badge.svg)](https://github.com/adourian/lucent/actions/workflows/ci.yml)
-[![Docker Pulls](https://img.shields.io/docker/pulls/adourian/lucent-backend?style=flat-square&color=0db7ed)](https://hub.docker.com/r/adourian/lucent-backend)
+[![Main CI](https://github.com/adourian/lucent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/adourian/lucent/actions/workflows/ci.yml)
+[![Dev CI](https://github.com/adourian/lucent/actions/workflows/ci-dev.yml/badge.svg?branch=dev)](https://github.com/adourian/lucent/actions/workflows/ci-dev.yml)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
+![Node.js](https://img.shields.io/badge/Node.js-22-315C2B.svg)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 
-**👉 Live demo:** https://lucent.kariadourian.com/
+**👉 Live demo:** [lucent.kariadourian.com](https://lucent.kariadourian.com/)
 
-Lucent is an end-to-end machine learning system for predicting clinical trial outcomes from public trial data, combining multimodal neural networks with Monte Carlo Dropout for uncertainty estimation.
-
----
-
-## 🧠 Model & Training
-
-The prediction model served by Lucent was custom-trained using a multi-modal neural network combining:
-
-- Clinical text embeddings (MedBERT, BioSimCSE)
-- Molecular representations (ChemBERTa on SMILES)
-- Structured trial metadata (phase, drug count, etc.)
-
-Each modality is processed through dedicated neural towers and fused via attention before final prediction.  
-Uncertainty is estimated at inference time using **Monte Carlo Dropout**.
-
-👉 Full model training, data processing, experiments, and results are documented here:  
-**https://github.com/adourian/Clinical-Trial-Outcomes**
-
-This repository contains the complete modeling pipeline, benchmarks, and architectural details.
+Lucent is an end-to-end machine-learning system that estimates the probability
+of a favorable clinical trial outcome at the study's current development stage
+from public trial data. It combines a multimodal neural network with Monte Carlo
+dropout for uncertainty estimation.
 
 ---
 
-## 🚀 Features
+## Model and training
 
-- ⚡ Pulls study JSON instantly from ClinicalTrials.gov  
-- 🧠 Predicts success probability + MC Dropout uncertainty  
-- 💻 Clean React + Vite UI (mobile-responsive)  
-- 🔌 FastAPI backend with type hints and PyTest coverage  
-- 🐳 Runs end-to-end with a single `docker compose up --build`
+The deployed v0.3.0 model uses a multimodal neural network with six inputs:
+
+- Lead-sponsor text encoded with all-MiniLM-L6-v2
+- Conditions encoded with MedBERT
+- Brief-summary, inclusion, and exclusion text encoded with BioSimCSE-BioLinkBERT
+- A categorical trial-phase vector
+
+The five text representations pass through modality-specific towers and attention
+fusion. A learned phase representation joins the fused text representation before
+the prediction head. At inference time, 500 stochastic dropout passes produce the
+reported mean probability and MC-dropout dispersion.
+
+Model training, data processing, experiments, and results are documented in the
+[model-development repository](https://github.com/adourian/Clinical-Trial-Outcomes).
+
+That repository contains the complete modeling pipeline, benchmarks, and
+architectural details.
 
 ---
 
-## 🏗️ Project Architecture
-```
+## Features
+
+- Retrieves public study records from ClinicalTrials.gov
+- Reports a favorable-outcome probability with MC-dropout dispersion
+- Presents trial, model, and optional sponsor-market context
+- Uses a React and Vite frontend with a typed FastAPI backend
+- Runs end to end with `docker compose up --build`
+
+---
+
+## Project architecture
+
+```bash
 lucent/
 |
 ├── backend/
@@ -66,42 +75,45 @@ lucent/
 ```
 
 **Flow:**
+
 1. User enters an NCTID via the frontend or `/predict` endpoint.
 2. Backend fetches trial data from ClinicalTrials.gov.
 3. Data is parsed, preprocessed, and embedded.
-4. A custom-trained multi-modal neural network returns a success probability and MC Dropout uncertainty.
+4. A custom-trained multimodal neural network returns an estimated probability
+   of a favorable trial outcome and MC-dropout dispersion.
 
 ---
 
-
-## 🏁 Local Development Setup
+## Local development
 
 <details>
-<summary><strong>Model Card (v0.2.0)</strong></summary>
+<summary><strong>Deployed model (v0.3.0)</strong></summary>
 
 | Metric | Value |
-|--------|-------|
-| Training set | 17 500 trials (NCTs) |
-| Val. accuracy | **70 %** (macro) |
-| Monte-Carlo σ | ~0.09 |
+| -------- | ------- |
+| Training corpus | 33K trials |
+| Inference | 500 MC-dropout passes |
+| Output | Mean probability and MC-dropout dispersion |
 
 </details>
 
+### Option 1 — Docker
 
-### **Option 1 — Docker**  
 ```bash
 git clone https://github.com/adourian/lucent.git
 cd lucent
 docker compose up --build
 ```
-* API docs → <http://localhost:8000/docs>  
-* Front-end UI → <http://localhost:3000>
+
+- API docs → <http://localhost:8000/docs>
+- Front-end UI → <http://localhost:3000>
 
 ---
 
-### **Option 2 — Run services manually**
+### Option 2 — Run services manually
 
-#### Back-end (FastAPI)  
+#### Back end (FastAPI)
+
 ```bash
 cd backend
 python -m venv .venv
@@ -110,33 +122,44 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload  # http://localhost:8000/docs
 ```
 
-#### Front-end (React + Vite)  
+#### Front end (React + Vite)
+
 ```bash
 cd frontend
-npm install
-
-# Create .env file for local development
-echo "VITE_API_BASE=http://localhost:8000" > .env
-
+npm ci
 npm run dev                    # http://localhost:5173
 ```
 
-**Important:** The frontend needs `VITE_API_BASE` environment variable to connect to the backend. The command above creates the `.env` file automatically, or you can create it manually:
+The Vite development server proxies prediction and finance requests to the local
+back-end on `http://127.0.0.1:8000`. To use a different API host, create an
+optional environment file and restart Vite:
+
 ```env
 # frontend/.env
 VITE_API_BASE=http://localhost:8000
 ```
 
-Open two terminals (one for each command set) and you’ll have a hot-reloading dev stack running locally.
+Open two terminals (one for each command set) and you’ll have a hot-reloading dev
+stack running locally.
 
 ---
 
-## 📄 License
+## Continuous integration and deployment
+
+The `dev` and `main` workflows run backend tests and frontend linting, type
+checking, and a production build. Railway is responsible for building the service
+images from the repository Dockerfiles and deploying the connected branch after
+its required CI checks pass; GitHub Actions does not publish duplicate Docker
+images.
+
+---
+
+## License
 
 MIT
 
 ---
 
-## 📬 Contact
+## Contact
 
 kari.adourian@gmail.com

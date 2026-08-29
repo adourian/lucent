@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  // no need for proxy in production
+  server: {
+    proxy: {
+      '/predict': 'http://127.0.0.1:8000',
+      '/finance': 'http://127.0.0.1:8000',
+    },
+  },
 })
-

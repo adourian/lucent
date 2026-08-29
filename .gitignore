@@ -135,7 +135,12 @@ cython_debug/
 
 
 plan.txt
+/TODO.md
 
 
 .DS_Store
 backend/.DS_Store
+
+# Frontend source utilities are not Python build artifacts.
+!frontend/src/lib/
+!frontend/src/lib/**
