@@ -41,7 +41,7 @@ function AppShell({ children, onBrandActivate }: AppShellProps) {
             aria-label="Lucent analysis home"
             onClick={handleBrandClick}
           >
-            <img className="brand__mark" src="/vite.svg" alt="" />
+            <img className="brand__mark" src="/brand/lucent-mark-compact.svg" alt="" />
             <span className="brand__copy">
               <span className="brand__name">Lucent</span>
               <span className="brand__descriptor">Clinical Trial Prediction</span>
