@@ -4,6 +4,7 @@ import {
   Navigate,
   Route,
   Routes,
+  useLocation,
 } from "react-router-dom";
 
 import AboutPage from "./AboutPage";
@@ -13,6 +14,7 @@ import RecentAnalyses from "./components/RecentAnalyses";
 import TrialSearch from "./components/TrialSearch";
 import { ANALYSIS_SESSION_KEY } from "./lib/analysisSession";
 import RouteMetadata from "./RouteMetadata";
+import { trackEvent } from "./lib/telemetry";
 import type {
   AnalysisResult,
   ApiErrorResponse,
@@ -178,6 +180,7 @@ function HomePage() {
 
     if (!normalizedNctid) {
       setFieldError("Enter a ClinicalTrials.gov NCT identifier.");
+      trackEvent("analysis_rejected", { reason: "empty" });
       return;
     }
 
@@ -185,6 +188,7 @@ function HomePage() {
       setFieldError(
         "Use NCT followed by eight digits, for example NCT05822830.",
       );
+      trackEvent("analysis_rejected", { reason: "format" });
       return;
     }
 
@@ -192,6 +196,7 @@ function HomePage() {
     const controller = new AbortController();
     requestRef.current = controller;
     setLoading(true);
+    trackEvent("analysis_submitted", { nctid: normalizedNctid });
 
     try {
       const response = await fetch(buildPredictionUrl(normalizedNctid), {
@@ -211,6 +216,7 @@ function HomePage() {
         generatedAt: new Date().toISOString(),
       };
       setResult(nextResult);
+      trackEvent("analysis_succeeded", { nctid: normalizedNctid });
       setRecentAnalyses((current) => {
         const nextRecent: RecentAnalysis = {
           nctid: nextResult.nctid,
@@ -233,6 +239,7 @@ function HomePage() {
           ? caught.message
           : "The prediction service is currently unavailable.",
       );
+      trackEvent("analysis_failed", { nctid: normalizedNctid });
     } finally {
       if (requestRef.current === controller) {
         requestRef.current = null;
@@ -280,6 +287,9 @@ function HomePage() {
           fieldError={fieldError}
           serviceError={serviceError}
           onChange={updateNctid}
+          onExampleSelect={(example) =>
+            trackEvent("example_selected", { nctid: example })
+          }
           onSubmit={() => void runAnalysis()}
         />
 
@@ -303,9 +313,20 @@ function HomePage() {
   );
 }
 
+function UsagePageTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackEvent("page_view");
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <UsagePageTracker />
       <RouteMetadata />
       <Routes>
         <Route path="/" element={<HomePage />} />

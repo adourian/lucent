@@ -130,7 +130,7 @@ npm ci
 npm run dev                    # http://localhost:5173
 ```
 
-The Vite development server proxies prediction and finance requests to the local
+The Vite development server proxies prediction, finance, and usage-event requests to the local
 back-end on `http://127.0.0.1:8000`. To use a different API host, create an
 optional environment file and restart Vite:
 
@@ -141,6 +141,33 @@ VITE_API_BASE=http://localhost:8000
 
 Open two terminals (one for each command set) and you’ll have a hot-reloading dev
 stack running locally.
+
+### Optional usage tracking
+
+When `REDIS_URL` is configured, Lucent records a small allow-listed set of
+first-party events and daily request counters in Redis. Browser analytics use a
+pseudonymous local/session identifier; Lucent does not store raw IP addresses,
+free-form trial text, or model outputs in this stream. If Redis is unavailable,
+the app continues without analytics.
+
+The public health probe is excluded from product usage. Prefer configuring
+UptimeRobot against `/health`. If an existing monitor must call `/predict`, give
+it a private header and the matching environment variables on the backend:
+
+```env
+UPTIME_MONITOR_TOKEN=replace-with-a-long-random-value
+UPTIME_MONITOR_NCTID=NCT00000000
+ANALYTICS_ADMIN_TOKEN=replace-with-a-separate-long-random-value
+```
+
+The monitor should send `X-Lucent-Monitor-Token`. `UPTIME_MONITOR_NCTID` is an
+additional guard for the known probe identifier; an NCTID alone is never used
+to identify a monitor. Daily counters can be read by an owner with:
+
+```bash
+curl -H "X-Analytics-Admin-Token: $ANALYTICS_ADMIN_TOKEN" \
+  "http://localhost:8000/analytics/summary"
+```
 
 ---
 
