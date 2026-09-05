@@ -7,6 +7,7 @@ export default defineConfig({
     proxy: {
       '/predict': 'http://127.0.0.1:8000',
       '/finance': 'http://127.0.0.1:8000',
+      '/events': 'http://127.0.0.1:8000',
     },
   },
 })

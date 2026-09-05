@@ -2,8 +2,9 @@ import os
 import redis
 import json
 import httpx
+from datetime import datetime, timezone
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
 import yfinance as yf
@@ -14,6 +15,14 @@ from app.core.parsing import parse_trial_json
 from app.core.preprocessing import preprocess_trial
 from app.services.clinicaltrials_api import fetch_nctid_data_async
 from app.core.predict import TrialPredictor
+from app.services.analytics import (
+    UsageEvent,
+    is_monitor_request,
+    read_usage_summary,
+    request_nctid,
+    schedule_request_counter,
+    schedule_usage_event,
+)
 
 
 # --- Response Models ---
@@ -139,9 +148,63 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def track_prediction_requests(request: Request, call_next):
+    """Count API requests without putting Redis on the response path.
+
+    Uptime probes are counted separately so they cannot inflate product usage.
+    The middleware intentionally ignores finance, health, docs, and static
+    requests; those are operational traffic rather than analysis usage.
+    """
+
+    response = await call_next(request)
+    if request.url.path.startswith("/predict/"):
+        monitor = is_monitor_request(request, request_nctid(request))
+        schedule_request_counter(
+            redis_client,
+            ENV,
+            monitor=monitor,
+            status_code=response.status_code,
+        )
+    return response
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.post("/events", status_code=202)
+async def record_usage_event(event: UsageEvent):
+    """Accept a constrained browser event and enqueue it for Redis storage.
+
+    The endpoint never receives or stores an IP address. If Redis is not
+    available, the event is simply dropped and the application remains usable.
+    """
+
+    schedule_usage_event(redis_client, ENV, event)
+    return {"accepted": redis_client is not None}
+
+
+@app.get("/analytics/summary")
+async def analytics_summary(
+    request: Request,
+    date: Optional[str] = Query(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+):
+    """Read daily usage counters for the owner, never for the public client."""
+
+    admin_token = os.getenv("ANALYTICS_ADMIN_TOKEN", "").strip()
+    provided_token = request.headers.get("x-analytics-admin-token", "")
+    if not admin_token or not provided_token:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    import secrets
+
+    if not secrets.compare_digest(provided_token, admin_token):
+        raise HTTPException(status_code=404, detail="Not found")
+
+    requested_date = date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return await read_usage_summary(redis_client, ENV, requested_date)
 
 
 @app.get("/predict/{nctid}", response_model=PredictionResponse)
@@ -308,4 +371,3 @@ async def get_stock_data(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
-    

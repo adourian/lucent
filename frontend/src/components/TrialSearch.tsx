@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import { ArrowRight, LoaderCircle } from "lucide-react";
+import { trackEvent } from "../lib/telemetry";
 
 const EXAMPLE_TRIALS = ["NCT05822830", "NCT04136171"];
 
@@ -12,6 +13,7 @@ interface TrialSearchProps {
   fieldError: string | null;
   serviceError: string | null;
   onChange: (value: string) => void;
+  onExampleSelect?: (nctid: string) => void;
   onSubmit: () => void;
 }
 
@@ -24,6 +26,7 @@ function TrialSearch({
   fieldError,
   serviceError,
   onChange,
+  onExampleSelect,
   onSubmit,
 }: TrialSearchProps) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -110,6 +113,7 @@ function TrialSearch({
               href="https://clinicaltrials.gov/"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackEvent("registry_link_opened")}
             >
               Find a trial on ClinicalTrials.gov
               <span aria-hidden="true"> ↗</span>
@@ -123,7 +127,10 @@ function TrialSearch({
                   key={example}
                   className="text-action mono"
                   type="button"
-                  onClick={() => onChange(example)}
+                  onClick={() => {
+                    onChange(example);
+                    onExampleSelect?.(example);
+                  }}
                   disabled={loading}
                 >
                   {example}
