@@ -1,6 +1,13 @@
 from __future__ import annotations
 
+import os
+import sys
+
 from starlette.requests import Request
+
+# Keep this test importable when CI invokes ``pytest`` from the backend
+# working directory without installing the application as a package.
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from app.services.analytics import UsageEvent, is_monitor_request, request_nctid
 
