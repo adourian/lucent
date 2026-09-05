@@ -169,6 +169,17 @@ curl -H "X-Analytics-Admin-Token: $ANALYTICS_ADMIN_TOKEN" \
   "http://localhost:8000/analytics/summary"
 ```
 
+For a local owner-only view of recent production days, copy
+`analytics.env.example` to the ignored `analytics.env`, add the Railway token,
+and run:
+
+```bash
+scripts/check-analytics.sh 7
+```
+
+The argument is the number of recent UTC days to query. The token remains local
+and is never bundled into the frontend.
+
 ---
 
 ## Continuous integration and deployment
