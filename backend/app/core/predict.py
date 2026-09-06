@@ -8,9 +8,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 
 from app.core.generate_embeddings import TrialEmbedder  
 from app.models.model import MultiInputNN
+from .phases import PHASE_CATEGORIES, normalize_phase
 
 # Ensure phase_labels are in this exact order
-phase_labels = ['early phase 1', 'phase 1', 'phase 1/phase 2', 'phase 2', 'phase 2/phase 3', 'phase 3', 'phase 4', 'nan']
+phase_labels = list(PHASE_CATEGORIES)
 
 class TrialPredictor:
     def __init__(self, model_path: str, device=None):
@@ -34,27 +35,9 @@ class TrialPredictor:
         """
         One-hot encode the phase field, including 'nan' as a category.
         """
-        # Convert to string and lower to handle potential None, np.nan, or varied casing
-        phase_str = str(phase).lower().strip()
-        
+        phase_str = normalize_phase(phase)
         one_hot = np.zeros(len(phase_labels), dtype=np.float32)
-        
-        # Explicitly map empty/None/NaN to 'nan' category
-        if not phase_str or phase_str == 'nan': # handles "", " ", None, or actual 'nan' string
-            try:
-                idx = phase_labels.index('nan') # Find the index of the 'nan' category
-                one_hot[idx] = 1.0
-            except ValueError:
-                # Fallback if 'nan' category itself isn't in phase_labels
-                pass 
-        else:
-            try:
-                idx = phase_labels.index(phase_str)
-                one_hot[idx] = 1.0
-            except ValueError:
-                # If a non-empty/non-nan phase string is not found, it remains all zeros.
-                # This corresponds to phases seen in production but not in training labels.
-                pass 
+        one_hot[phase_labels.index(phase_str)] = 1.0
         return one_hot
 
     def predict(self, trial_dict: dict) -> dict:

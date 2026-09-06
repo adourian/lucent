@@ -17,8 +17,9 @@ def test_normalize_phase():
     assert normalize_phase("Phase 1") == "phase 1"
     assert normalize_phase("phase2") == "phase 2"
     assert normalize_phase("Phase-2/Phase-3") == "phase 2/phase 3"
-    assert normalize_phase("RandomString") == "randomstring"
-    assert normalize_phase("") == "na"
+    with pytest.raises(ValueError, match="Unsupported trial phase"):
+        normalize_phase("RandomString")
+    assert normalize_phase("") == "nan"
 
 
 def test_clean_criteria():

@@ -37,7 +37,7 @@ def test_parse_trial_json_full_fields():
     assert parsed["brief_summary"] == "This is a study summary."
     assert parsed["eligibility"] == "Inclusion: Adults. Exclusion: Pregnant women."
     assert parsed["diseases"] == ["Diabetes", "Hypertension"]
-    assert parsed["phase"] == "Phase 2"
+    assert parsed["phase"] == ["Phase 2"]
 
 
 def test_parse_trial_json_missing_fields():
@@ -48,4 +48,4 @@ def test_parse_trial_json_missing_fields():
     assert parsed["brief_summary"] == ""
     assert parsed["eligibility"] == ""
     assert parsed["diseases"] == []
-    assert parsed["phase"] == "NA"
+    assert parsed["phase"] is None

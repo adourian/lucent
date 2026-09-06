@@ -8,8 +8,8 @@ def parse_trial_json(data: dict):
     brief_summary = protocol.get('descriptionModule', {}).get('briefSummary', "")
     eligibility = protocol.get('eligibilityModule', {}).get('eligibilityCriteria', "")
     diseases = protocol.get('conditionsModule', {}).get('conditions', [])
-    phase_list = protocol.get('designModule', {}).get('phases', [])
-    phase = phase_list[0] if phase_list else "NA"
+    # Preserve every phase for training-contract normalization downstream.
+    phase = protocol.get('designModule', {}).get('phases')
 
     # ✅ Additions
     title = protocol.get('identificationModule', {}).get('briefTitle', "")

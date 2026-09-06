@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from app.core.parsing import parse_trial_json
 from app.core.preprocessing import preprocess_trial
+from app.core.phases import UnsupportedPhaseError
 from app.services.clinicaltrials_api import fetch_nctid_data_async
 from app.core.predict import TrialPredictor
 from app.services.analytics import (
@@ -217,7 +218,8 @@ async def predict_trial(nctid: str):
         raise HTTPException(status_code=400, detail="Invalid NCT ID format. Must start with 'NCT'.")
 
     # --- CACHE CHECK ---
-    cache_key = f"nctid:{ENV}:{nctid}"
+    # Old entries may contain predictions made with incorrect phase vectors.
+    cache_key = f"nctid:{ENV}:phase-v2:{nctid}"
     
     if redis_client:
         try:
@@ -273,6 +275,8 @@ async def predict_trial(nctid: str):
 
         return final_response
     
+    except UnsupportedPhaseError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 404:
             raise HTTPException(status_code=404, detail=f"Trial '{nctid}' not found on ClinicalTrials.gov.")
