@@ -61,7 +61,12 @@ const AnalysisReport = forwardRef<HTMLElement, AnalysisReportProps>(
                 View on ClinicalTrials.gov (opens in a new tab)
               </span>
             </a>
-            <span>Analyzed at {formatGeneratedTime(result.generatedAt)}</span>
+            <span>
+              Analyzed at <time dateTime={result.generated_at}>
+                {formatGeneratedTime(result.generated_at)}
+              </time>
+              {result.cache_hit && " · Cached result"}
+            </span>
           </div>
 
           <h1 id="report-title">{title}</h1>
@@ -146,7 +151,7 @@ const AnalysisReport = forwardRef<HTMLElement, AnalysisReportProps>(
                   as favorable or unfavorable.
                 </li>
                 <li>No feature attribution or causal explanation is returned.</li>
-                <li>Cached predictions have no configured expiry.</li>
+                <li>The analysis time records when this estimate was computed.</li>
               </ul>
               <Link className="model-context__link" to="/about">
                 Read the full model note
@@ -164,7 +169,7 @@ const AnalysisReport = forwardRef<HTMLElement, AnalysisReportProps>(
             <h2 id="sponsor-heading">Sponsor and market context</h2>
           </div>
           <SponsorContext
-            key={result.generatedAt}
+            key={result.generated_at}
             sponsor={result.sponsor}
           />
         </section>

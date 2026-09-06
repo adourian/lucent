@@ -1,4 +1,5 @@
-export const ANALYSIS_SESSION_KEY = "lucent.analysis-session.v1";
+// Older sessions contain browser-generated timestamps with no provenance.
+export const ANALYSIS_SESSION_KEY = "lucent.analysis-session.v2";
 
 export function clearAnalysisSession(): void {
   if (typeof window === "undefined") return;

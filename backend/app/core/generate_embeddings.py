@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModel
 from sentence_transformers import SentenceTransformer
+from .prediction_identity import ENCODERS
 
 
 class TrialEmbedder:
@@ -11,10 +12,15 @@ class TrialEmbedder:
         print(f"[TrialEmbedder] Using device: {self.device}")
 
         # Models
-        self.sponsor_model = SentenceTransformer('all-MiniLM-L6-v2', device=str(self.device))
-        self.text_model = SentenceTransformer('kamalkraj/BioSimCSE-BioLinkBERT-BASE', device=str(self.device))
-        self.disease_tokenizer = AutoTokenizer.from_pretrained("Charangan/MedBERT")
-        self.disease_model = AutoModel.from_pretrained("Charangan/MedBERT").to(self.device)
+        self.sponsor_model = SentenceTransformer(**ENCODERS["sponsor"], device=str(self.device))
+        self.text_model = SentenceTransformer(**ENCODERS["text"], device=str(self.device))
+        disease = ENCODERS["disease"]
+        self.disease_tokenizer = AutoTokenizer.from_pretrained(
+            disease["model_name_or_path"], revision=disease["revision"],
+        )
+        self.disease_model = AutoModel.from_pretrained(
+            disease["model_name_or_path"], revision=disease["revision"],
+        ).to(self.device)
         self.disease_model.eval()
 
         self.batch_size = batch_size

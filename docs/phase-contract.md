@@ -47,9 +47,10 @@ This serving policy does not imply that missing and not-applicable trials are
 clinically equivalent or that prediction quality is validated for them.
 Malformed array members, such as null or blank strings, are rejected.
 
-Prediction cache keys now include `phase-v2`, bypassing old predictions made
-with incorrect vectors. Existing entries are retained; general cache expiry
-and model/input versioning remain separate work.
+Phase preprocessing is included in the
+[prediction artifact identity](prediction-cache.md). Old NCTID-only and
+`phase-v2` entries are bypassed; new entries use the full artifact/source identity
+and have a bounded lifetime.
 
 ## Regression checks
 

@@ -140,9 +140,13 @@ export function formatGeneratedTime(value: string | null | undefined): string {
   if (Number.isNaN(date.getTime())) return "Time unavailable";
 
   return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
     hour: "2-digit",
     hourCycle: "h23",
     minute: "2-digit",
+    timeZoneName: "short",
   }).format(date);
 }
 
