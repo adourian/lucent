@@ -40,7 +40,7 @@ class EligibilityDecision:
 
     def abstention(self) -> AbstentionResponse:
         messages = {
-            "unsupported": "This trial cannot currently be evaluated because its study type or phase is unsupported.",
+            "unsupported": "This trial cannot currently be evaluated.",
             "insufficient_input": "This trial cannot currently be evaluated because required clinical information is missing.",
             "malformed_upstream": "This trial cannot currently be evaluated because the registry returned a malformed record.",
         }
@@ -159,17 +159,21 @@ def assess_prediction_eligibility(data: Any, expected_nctid: str) -> Eligibility
     if not study_type:
         missing_fields.append("study_type")
     elif study_type != "INTERVENTIONAL":
+        study_description = {
+            "OBSERVATIONAL": "This is an observational study.",
+            "EXPANDED_ACCESS": "This is an expanded access record.",
+        }.get(study_type, "The registry reports an unrecognized study type.")
         unsupported.append(issue("UNSUPPORTED_STUDY_TYPE", "study_type",
-                                 "Lucent currently evaluates interventional trials only."))
+                                 f"{study_description} Lucent currently evaluates interventional trials only."))
 
     insufficient = []
     criteria_content = re.sub(r"\b(?:inclusion|exclusion|criteria)\b", "",
                               clean_criteria(parsed["eligibility"]), flags=re.IGNORECASE)
     required = (
-        ("brief_summary", _has_content(parsed["brief_summary"]), "MISSING_BRIEF_SUMMARY", "A brief summary is required."),
-        ("conditions", any(_has_content(item) for item in parsed["diseases"]), "MISSING_CONDITIONS", "At least one condition is required."),
-        ("eligibility_criteria", _has_content(criteria_content), "MISSING_ELIGIBILITY_CRITERIA", "Eligibility criteria containing more than section headings are required."),
-        ("sponsor", _has_content(parsed["sponsor"]), "MISSING_SPONSOR", "A lead sponsor is required."),
+        ("brief_summary", _has_content(parsed["brief_summary"]), "MISSING_BRIEF_SUMMARY", "The brief summary is missing."),
+        ("conditions", any(_has_content(item) for item in parsed["diseases"]), "MISSING_CONDITIONS", "No conditions are listed."),
+        ("eligibility_criteria", _has_content(criteria_content), "MISSING_ELIGIBILITY_CRITERIA", "Eligibility criteria are missing or contain only section headings."),
+        ("sponsor", _has_content(parsed["sponsor"]), "MISSING_SPONSOR", "The lead sponsor is missing."),
     )
     for name, present, code, message in required:
         if not present:

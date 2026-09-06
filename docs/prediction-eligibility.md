@@ -67,7 +67,7 @@ score, uncertainty or label:
     {
       "code": "MISSING_BRIEF_SUMMARY",
       "field": "brief_summary",
-      "message": "A brief summary is required."
+      "message": "The brief summary is missing."
     }
   ]
 }
@@ -78,7 +78,9 @@ Reason codes are `MISSING_BRIEF_SUMMARY`, `MISSING_CONDITIONS`,
 `UNSUPPORTED_STUDY_TYPE`, `MALFORMED_UPSTREAM_DATA`, `INVALID_FIELD_TYPE` and
 `TRIAL_ID_MISMATCH`. Multiple omissions are reported together. Structural errors
 take precedence; otherwise unsupported scope takes precedence over insufficiency,
-while both sets of reasons are retained. Explanations never echo upstream values.
+while both sets of reasons are retained. Known study types are named explicitly
+(for example, “This is an observational study”). Missing-information reasons name
+each absent field. Unrecognized upstream values are not echoed.
 
 The frontend displays “Analysis unavailable” with the explanation, clears the
 previous report, and removes any recent estimate for the abstained trial. It

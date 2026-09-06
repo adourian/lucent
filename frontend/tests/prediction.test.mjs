@@ -104,7 +104,7 @@ for (const category of ["unsupported", "insufficient_input", "malformed_upstream
     const abstention = {
       status: "abstained", category,
       message: "This trial cannot currently be evaluated.",
-      reasons: [{ code: "MISSING_BRIEF_SUMMARY", field: "brief_summary", message: "A brief summary is required." }],
+      reasons: [{ code: "MISSING_BRIEF_SUMMARY", field: "brief_summary", message: "The brief summary is missing." }],
     };
     assert.equal(isPredictionAbstention(abstention), true);
     assert.equal(isPredictionResponse(abstention), false);
@@ -116,10 +116,25 @@ for (const category of ["unsupported", "insufficient_input", "malformed_upstream
     }));
     assert.match(html, /Analysis unavailable/);
     assert.match(html, /This trial cannot currently be evaluated/);
-    assert.match(html, /A brief summary is required/);
+    assert.match(html, /The brief summary is missing/);
     assert.doesNotMatch(html, /estimate-figure|analysis-report|50\.0%/);
   });
 }
+
+test("abstention explanations retain the study type and every missing field", () => {
+  const message = formatAbstentionMessage({
+    status: "abstained", category: "unsupported",
+    message: "This trial cannot currently be evaluated.",
+    reasons: [
+      { code: "UNSUPPORTED_STUDY_TYPE", field: "study_type", message: "This is an observational study. Lucent currently evaluates interventional trials only." },
+      { code: "MISSING_BRIEF_SUMMARY", field: "brief_summary", message: "The brief summary is missing." },
+      { code: "MISSING_SPONSOR", field: "sponsor", message: "The lead sponsor is missing." },
+    ],
+  });
+  assert.match(message, /observational study/);
+  assert.match(message, /brief summary is missing/);
+  assert.match(message, /lead sponsor is missing/);
+});
 
 test("supported missing fields are disclosed while retaining the prediction", () => {
   const partial = { ...result, input_status: "supported_with_missing", missing_fields: ["phase"] };

@@ -72,13 +72,19 @@ def test_all_other_trained_phase_categories_remain_supported(phases):
     assert assess(record).eligible
 
 
-@pytest.mark.parametrize("study_type", ["OBSERVATIONAL", "EXPANDED_ACCESS", "NEW_STUDY_TYPE"])
-def test_explicit_unsupported_study_type(study_type):
+@pytest.mark.parametrize("study_type, description", [
+    ("OBSERVATIONAL", "This is an observational study."),
+    ("EXPANDED_ACCESS", "This is an expanded access record."),
+    ("NEW_STUDY_TYPE", "The registry reports an unrecognized study type."),
+])
+def test_explicit_unsupported_study_type(study_type, description):
     record = supported_record()
     record["protocolSection"]["designModule"]["studyType"] = study_type
     result = assess(record)
     assert result.status == "unsupported"
     assert result.reasons[0].code == "UNSUPPORTED_STUDY_TYPE"
+    assert result.reasons[0].message == f"{description} Lucent currently evaluates interventional trials only."
+    assert "study type or phase" not in result.abstention().message
 
 
 @pytest.mark.parametrize("phases", [["PHASE5"], ["PHASE1", "PHASE3"], ["NA", "PHASE2"]])
@@ -97,6 +103,11 @@ def test_effectively_empty_record_reports_all_critical_omissions():
         "MISSING_BRIEF_SUMMARY", "MISSING_CONDITIONS", "MISSING_ELIGIBILITY_CRITERIA", "MISSING_SPONSOR",
     }
     assert result.prepared_trial is None
+    assert [reason.message for reason in result.reasons] == [
+        "The brief summary is missing.", "No conditions are listed.",
+        "Eligibility criteria are missing or contain only section headings.",
+        "The lead sponsor is missing.",
+    ]
 
 
 @pytest.mark.parametrize("module, name, value, code", [
