@@ -15,7 +15,7 @@ import TrialSearch from "./components/TrialSearch";
 import { ANALYSIS_SESSION_KEY } from "./lib/analysisSession";
 import RouteMetadata from "./RouteMetadata";
 import { trackEvent } from "./lib/telemetry";
-import { isPredictionResponse, isPredictionTimestamp } from "./lib/prediction";
+import { formatAbstentionMessage, isPredictionAbstention, isPredictionResponse, isPredictionTimestamp } from "./lib/prediction";
 import type {
   AnalysisResult,
   ApiErrorResponse,
@@ -176,6 +176,14 @@ function HomePage() {
       });
       const payload: unknown = await response.json().catch(() => null);
 
+      if (isPredictionAbstention(payload)) {
+        // An abstained request must not leave a previous score on the report.
+        setResult(null);
+        setRecentAnalyses((current) => current.filter((item) => item.nctid !== normalizedNctid));
+        setServiceError(formatAbstentionMessage(payload));
+        trackEvent("analysis_failed", { nctid: normalizedNctid });
+        return;
+      }
       if (!response.ok) {
         throw new Error(getPredictionError(payload, response.status));
       }

@@ -36,8 +36,11 @@ use this encoder.
 Array ordering is irrelevant, duplicate phase entries collapse, and the two
 trained combinations use their own categories. Other combinations (including
 Phase I/III, Phase III/IV, or missing mixed with a known phase) are rejected.
-Unknown strings and malformed values raise `UnsupportedPhaseError`; the
-prediction endpoint returns HTTP 422 without generating a prediction.
+The low-level encoder raises `UnsupportedPhaseError` for unsupported values.
+The API's [eligibility gate](prediction-eligibility.md) returns a structured
+abstention: HTTP 422 for unsupported phases or HTTP 502 for malformed registry
+field types. Missing phase remains supported when required clinical inputs
+are present.
 
 Historical strings remain accepted, ignoring case, whitespace, underscores and
 hyphens, e.g. `Phase-2/Phase-3`. Missing scalar values (`None`, numeric NaN,

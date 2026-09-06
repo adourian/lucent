@@ -44,7 +44,11 @@ def api(monkeypatch):
         }),
     )
     record = {"protocolSection": {
-        "designModule": {"phases": ["PHASE2"]},
+        "designModule": {"phases": ["PHASE2"], "studyType": "INTERVENTIONAL"},
+        "descriptionModule": {"briefSummary": "Study of treatment for diabetes."},
+        "conditionsModule": {"conditions": ["Diabetes"]},
+        "eligibilityModule": {"eligibilityCriteria": "Adults with diabetes."},
+        "sponsorCollaboratorsModule": {"leadSponsor": {"name": "Example sponsor"}},
         "statusModule": {"lastUpdatePostDateStruct": {"date": "2026-09-04"}},
     }}
     fetch = AsyncMock(return_value=record)
@@ -185,7 +189,7 @@ def test_artifact_identity_tracks_actual_checkpoint_bytes(tmp_path):
     assert second["model_id"] != first["model_id"]
 
 
-@pytest.mark.parametrize("source_name", ["parsing.py", "preprocessing.py", "phases.py",
+@pytest.mark.parametrize("source_name", ["parsing.py", "preprocessing.py", "phases.py", "eligibility.py",
                                        "generate_embeddings.py", "predict.py", "model.py"])
 def test_artifact_changes_when_pipeline_source_changes(tmp_path, monkeypatch, source_name):
     weights = tmp_path / "checkpoint.pth"

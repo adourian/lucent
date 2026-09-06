@@ -1,5 +1,5 @@
-// Older sessions contain browser-generated timestamps with no provenance.
-export const ANALYSIS_SESSION_KEY = "lucent.analysis-session.v2";
+// Older sessions may predate the prediction eligibility gate.
+export const ANALYSIS_SESSION_KEY = "lucent.analysis-session.v3";
 
 export function clearAnalysisSession(): void {
   if (typeof window === "undefined") return;
