@@ -126,7 +126,8 @@ def api(monkeypatch):
         "predictor": SimpleNamespace(predict_with_uncertainty=Mock(return_value={
             "probability": 0.5, "deterministic": 0.5, "uncertainty": 0.1,
             "label": 1,
-        })),
+        }), identity={"artifact_id": "test-artifact", "model_id": "test-model",
+                      "preprocessing_id": "test-preprocessing", "encoder_id": "test-encoder"}),
     })
     return main
 
@@ -147,14 +148,14 @@ def test_api_ignores_old_phase_cache_and_reuses_corrected_result(api, monkeypatc
     old_key = f"nctid:{api.ENV}:{nctid}"
     entries = {old_key: json.dumps({"phase": "phase 1"})}
     cache = SimpleNamespace(get=Mock(side_effect=entries.get),
-                            set=Mock(side_effect=entries.__setitem__))
+                            set=Mock(side_effect=lambda key, value, **_: entries.__setitem__(key, value)))
     monkeypatch.setattr(api, "redis_client", cache)
     fetch = AsyncMock(return_value=raw_trial(["PHASE1", "PHASE2"]))
     monkeypatch.setattr(api, "fetch_nctid_data_async", fetch)
     result = asyncio.run(api.predict_trial(nctid))
     assert result["phase"] == "phase 1/phase 2"
-    assert asyncio.run(api.predict_trial(nctid)) == result
-    fetch.assert_awaited_once()
+    assert asyncio.run(api.predict_trial(nctid)) == {**result, "cache_hit": True}
+    assert fetch.await_count == 2  # Every request checks current evidence.
     cache.set.assert_called_once()
     assert cache.get.call_args.args[0] != old_key
     assert entries[old_key] == json.dumps({"phase": "phase 1"})

@@ -37,8 +37,8 @@ function RecentAnalyses({ analyses, onSelect }: RecentAnalysesProps) {
               {formatProbability(analysis.probability)} · σ{" "}
               {formatPercentagePoints(analysis.uncertainty)}
             </span>
-            <time className="session-log__time" dateTime={analysis.generatedAt}>
-              {formatGeneratedTime(analysis.generatedAt)}
+            <time className="session-log__time" dateTime={analysis.generated_at}>
+              {formatGeneratedTime(analysis.generated_at)}
             </time>
           </li>
         ))}

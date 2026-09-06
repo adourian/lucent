@@ -15,10 +15,10 @@ import TrialSearch from "./components/TrialSearch";
 import { ANALYSIS_SESSION_KEY } from "./lib/analysisSession";
 import RouteMetadata from "./RouteMetadata";
 import { trackEvent } from "./lib/telemetry";
+import { isPredictionResponse, isPredictionTimestamp } from "./lib/prediction";
 import type {
   AnalysisResult,
   ApiErrorResponse,
-  PredictionApiResponse,
   RecentAnalysis,
 } from "./types";
 
@@ -43,34 +43,6 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-function isPredictionResponse(value: unknown): value is PredictionApiResponse {
-  if (!isRecord(value)) return false;
-
-  return (
-    typeof value.nctid === "string" &&
-    typeof value.phase === "string" &&
-    typeof value.sponsor === "string" &&
-    typeof value.title === "string" &&
-    typeof value.status === "string" &&
-    typeof value.diseases === "string" &&
-    (typeof value.enrollment === "string" ||
-      typeof value.enrollment === "number") &&
-    typeof value.completion_date === "string" &&
-    isFiniteNumber(value.probability) &&
-    isFiniteNumber(value.uncertainty) &&
-    isFiniteNumber(value.deterministic) &&
-    (value.label === 0 || value.label === 1)
-  );
-}
-
-function isAnalysisResult(value: unknown): value is AnalysisResult {
-  return (
-    isPredictionResponse(value) &&
-    isRecord(value) &&
-    typeof value.generatedAt === "string"
-  );
-}
-
 function isRecentAnalysis(value: unknown): value is RecentAnalysis {
   return (
     isRecord(value) &&
@@ -78,7 +50,7 @@ function isRecentAnalysis(value: unknown): value is RecentAnalysis {
     typeof value.title === "string" &&
     isFiniteNumber(value.probability) &&
     isFiniteNumber(value.uncertainty) &&
-    typeof value.generatedAt === "string"
+    isPredictionTimestamp(value.generated_at)
   );
 }
 
@@ -98,7 +70,7 @@ function readAnalysisSession(): StoredAnalysisSession {
     if (!isRecord(parsed)) return emptySession;
 
     return {
-      result: isAnalysisResult(parsed.result) ? parsed.result : null,
+      result: isPredictionResponse(parsed.result) ? parsed.result : null,
       recentAnalyses: Array.isArray(parsed.recentAnalyses)
         ? parsed.recentAnalyses.filter(isRecentAnalysis).slice(0, 5)
         : [],
@@ -211,10 +183,7 @@ function HomePage() {
         throw new Error("The prediction service returned an invalid response.");
       }
 
-      const nextResult: AnalysisResult = {
-        ...payload,
-        generatedAt: new Date().toISOString(),
-      };
+      const nextResult: AnalysisResult = payload;
       setResult(nextResult);
       trackEvent("analysis_succeeded", { nctid: normalizedNctid });
       setRecentAnalyses((current) => {
@@ -223,7 +192,7 @@ function HomePage() {
           title: nextResult.title,
           probability: nextResult.probability,
           uncertainty: nextResult.uncertainty,
-          generatedAt: nextResult.generatedAt,
+          generated_at: nextResult.generated_at,
         };
         return [
           nextRecent,

@@ -9,13 +9,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
 import yfinance as yf
 from typing import Literal, Optional, Union
-from pydantic import BaseModel
+from pydantic import AwareDatetime, BaseModel
 
 from app.core.parsing import parse_trial_json
 from app.core.preprocessing import preprocess_trial
 from app.core.phases import UnsupportedPhaseError
 from app.services.clinicaltrials_api import fetch_nctid_data_async
 from app.core.predict import TrialPredictor
+from app.core.prediction_identity import (
+    PREDICTION_CACHE_TTL_SECONDS,
+    PREDICTION_SAMPLES,
+    payload_hash,
+    prediction_cache_key,
+)
 from app.services.analytics import (
     UsageEvent,
     is_monitor_request,
@@ -41,6 +47,15 @@ class PredictionResponse(BaseModel):
     uncertainty: float
     deterministic: float
     label: int
+    generated_at: AwareDatetime
+    source_fetched_at: AwareDatetime
+    source_last_updated: Optional[str] = None
+    cache_hit: bool
+    model_id: str
+    preprocessing_id: str
+    encoder_id: str
+    artifact_id: str
+    source_hash: str
 
 
 class PricePoint(BaseModel):
@@ -161,6 +176,8 @@ async def track_prediction_requests(request: Request, call_next):
 
     response = await call_next(request)
     if request.url.path.startswith("/predict/"):
+        # Browser/proxy caches must not bypass the current-record check.
+        response.headers["Cache-Control"] = "no-store"
         monitor = is_monitor_request(request, request_nctid(request))
         schedule_request_counter(
             redis_client,
@@ -217,37 +234,37 @@ async def predict_trial(nctid: str):
     if not nctid.startswith("NCT"):
         raise HTTPException(status_code=400, detail="Invalid NCT ID format. Must start with 'NCT'.")
 
-    # --- CACHE CHECK ---
-    # Old entries may contain predictions made with incorrect phase vectors.
-    cache_key = f"nctid:{ENV}:phase-v2:{nctid}"
-    
-    if redis_client:
-        try:
-            cached_result = await run_in_threadpool(redis_client.get, cache_key)
-            if cached_result:
-                print(f"[Cache] HIT for {nctid}")
-                # The result is stored as a JSON string, so we parse it back
-                return json.loads(cached_result)
-        except Exception as e:
-            # If cache check fails, just log it and proceed to compute
-            print(f"Redis 'get' error: {e}")
-
-    print(f"[Cache] MISS for {nctid}. Running full prediction.")
-    # --- END: CACHE CHECK ---
-
     try:
+        # Check current evidence before looking up a prediction. Hash the full
+        # payload so registry context displayed with a prediction stays current.
         trial_data = await fetch_nctid_data_async(nctid, app_state["http_client"])
+        source_fetched_at = datetime.now(timezone.utc)
+        source_hash = payload_hash(trial_data)
+        identity = app_state["predictor"].identity
+        cache_key = prediction_cache_key(ENV, nctid, identity["artifact_id"], source_hash)
+        if redis_client:
+            try:
+                cached_json = await run_in_threadpool(redis_client.get, cache_key)
+                if cached_json:
+                    cached = PredictionResponse.model_validate_json(cached_json).model_dump(mode="json")
+                    expected = {"nctid": nctid, "source_hash": source_hash, **identity}
+                    if all(cached[key] == value for key, value in expected.items()):
+                        print(f"[Cache] HIT for {nctid}")
+                        return {**cached, "cache_hit": True}
+            except Exception as e:
+                print(f"Prediction cache read error: {e}")
+
         parsed = parse_trial_json(trial_data)
         prepped = preprocess_trial(parsed)
         result = await run_in_threadpool(
             app_state["predictor"].predict_with_uncertainty,
             prepped,
-            n_samples=500
+            n_samples=PREDICTION_SAMPLES
         )
 
         print(f"[Lucent] {nctid} | Deterministic: {result['deterministic']} | MC: {result['probability']} ± {result['uncertainty']}")
 
-        final_response = {
+        final_response = PredictionResponse(**{
             "nctid": nctid,
             "phase": prepped["phase"],
             "sponsor": prepped["sponsor"],
@@ -256,8 +273,15 @@ async def predict_trial(nctid: str):
             "diseases": prepped.get("diseases", ""),
             "enrollment": prepped.get("enrollment", ""),
             "completion_date": prepped.get("completion_date", ""),
+            "generated_at": datetime.now(timezone.utc),
+            "source_fetched_at": source_fetched_at,
+            "source_last_updated": trial_data.get("protocolSection", {}).get(
+                "statusModule", {}).get("lastUpdatePostDateStruct", {}).get("date"),
+            "cache_hit": False,
+            "source_hash": source_hash,
+            **identity,
             **result
-        }
+        }).model_dump(mode="json")
 
         # --- CACHE SET ---
         if redis_client:
@@ -266,9 +290,10 @@ async def predict_trial(nctid: str):
                 await run_in_threadpool(
                     redis_client.set,
                     cache_key, 
-                    json.dumps(final_response)
+                    json.dumps(final_response),
+                    ex=PREDICTION_CACHE_TTL_SECONDS,
                 )
-                print(f"[Cache] SET for {nctid} in {ENV}. No TTL (cached indefinitely).")
+                print(f"[Cache] SET for {nctid} in {ENV}. TTL: {PREDICTION_CACHE_TTL_SECONDS}s.")
             except Exception as e:
                 print(f"Redis 'set' error: {e}")
         # --- CACHE SET ---

@@ -9,6 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from app.core.generate_embeddings import TrialEmbedder  
 from app.models.model import MultiInputNN
 from .phases import PHASE_CATEGORIES, normalize_phase
+from .prediction_identity import build_artifact_identity
 
 # Ensure phase_labels are in this exact order
 phase_labels = list(PHASE_CATEGORIES)
@@ -30,6 +31,7 @@ class TrialPredictor:
 
         # Embedder
         self.embedder = TrialEmbedder(device=self.device)
+        self.identity = build_artifact_identity(model_path, str(self.device))
 
     def _encode_phase(self, phase: str) -> np.ndarray:
         """

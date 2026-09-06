@@ -12,17 +12,24 @@ export interface PredictionApiResponse {
   uncertainty: number;
   deterministic: number;
   label: 0 | 1;
+  generated_at: string;
+  source_fetched_at: string;
+  source_last_updated: string | null;
+  cache_hit: boolean;
+  model_id: string;
+  preprocessing_id: string;
+  encoder_id: string;
+  artifact_id: string;
+  source_hash: string;
 }
 
-/** A prediction annotated with the client-side time at which it was generated. */
-export interface AnalysisResult extends PredictionApiResponse {
-  generatedAt: string;
-}
+/** Displayed predictions retain the backend's creation time and provenance. */
+export type AnalysisResult = PredictionApiResponse;
 
 /** The subset retained for the compact, session-local recent analyses list. */
 export type RecentAnalysis = Pick<
   AnalysisResult,
-  "nctid" | "title" | "probability" | "uncertainty" | "generatedAt"
+  "nctid" | "title" | "probability" | "uncertainty" | "generated_at"
 >;
 
 export type FinanceRange =

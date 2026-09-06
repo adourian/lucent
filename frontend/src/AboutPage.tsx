@@ -251,8 +251,8 @@ const AboutPage = ({ modelStats }: AboutPageProps) => {
                   </li>
                   <li>
                     An estimate reflects the registry record available when it was
-                    generated. Later record updates are not automatically
-                    incorporated into cached results.
+                    generated. A new analysis request checks for registry updates
+                    before reusing an estimate.
                   </li>
                   <li>
                     The model uses only the representations listed above. Trial
@@ -293,8 +293,10 @@ const AboutPage = ({ modelStats }: AboutPageProps) => {
                   <div>
                     <dt>Cached analysis</dt>
                     <dd>
-                      Predictions may be served from cache and are not automatically
-                      recomputed when a registry record changes.
+                      Predictions can be reused for up to 24 hours when the model
+                      pipeline and registry record are unchanged. Cached results
+                      keep their original analysis time. Requesting another analysis
+                      checks the latest record; an open report does not refresh itself.
                     </dd>
                   </div>
                   <div>
