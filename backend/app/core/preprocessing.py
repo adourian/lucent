@@ -1,24 +1,6 @@
 import re
 from typing import Dict, Any
-
-def normalize_phase(phase_raw: str) -> str:
-    """
-    Normalize clinical phase strings to standard format used in training.
-    """
-    mapping = {
-        "earlyphase1": "early phase 1",
-        "phase1": "phase 1",
-        "phase1/phase2": "phase 1/phase 2",
-        "phase2": "phase 2",
-        "phase2/phase3": "phase 2/phase 3",
-        "phase3": "phase 3",
-        "phase4": "phase 4"
-    }
-    if not phase_raw:
-        return "na"
-    # Remove spaces and dashes, lowercase
-    key = phase_raw.replace(" ", "").replace("-", "").lower()
-    return mapping.get(key, phase_raw.lower())
+from .phases import normalize_phase
 
 def clean_criteria(text: str) -> str:
     """
