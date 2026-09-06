@@ -47,7 +47,13 @@ CASES = [
 
 
 def raw_trial(phases):
-    return {"protocolSection": {"designModule": {"phases": phases}}}
+    return {"protocolSection": {
+        "designModule": {"phases": phases, "studyType": "INTERVENTIONAL"},
+        "descriptionModule": {"briefSummary": "Study of treatment for diabetes."},
+        "conditionsModule": {"conditions": ["Diabetes"]},
+        "eligibilityModule": {"eligibilityCriteria": "Adults with diabetes."},
+        "sponsorCollaboratorsModule": {"leadSponsor": {"name": "Example sponsor"}},
+    }}
 
 
 @pytest.mark.parametrize("raw, canonical, index", CASES)
@@ -136,10 +142,9 @@ def test_api_rejects_unsupported_phase_without_inference(api, monkeypatch):
     monkeypatch.setattr(api, "fetch_nctid_data_async", AsyncMock(
         return_value=raw_trial(["PHASE1", "PHASE3"]),
     ))
-    with pytest.raises(api.HTTPException) as exc:
-        asyncio.run(api.predict_trial("NCT00000001"))
-    assert exc.value.status_code == 422
-    assert "Unsupported trial phase combination" in exc.value.detail
+    response = asyncio.run(api.predict_trial("NCT00000001"))
+    assert response.status_code == 422
+    assert json.loads(response.body)["reasons"][0]["code"] == "UNSUPPORTED_PHASE"
     api.app_state["predictor"].predict_with_uncertainty.assert_not_called()
 
 

@@ -12,6 +12,9 @@ let isPredictionResponse;
 let AnalysisReport;
 let RecentAnalyses;
 let sessionKey;
+let isPredictionAbstention;
+let formatAbstentionMessage;
+let TrialSearch;
 
 before(async () => {
   // Use the existing Vite TS/React transforms; no browser or extra test runner.
@@ -27,7 +30,8 @@ before(async () => {
   });
   const output = `${buildDirectory}/components.mjs`;
   await writeFile(output, bundle.output.find((chunk) => chunk.type === "chunk" && chunk.isEntry).code);
-  ({ isPredictionResponse, AnalysisReport, RecentAnalyses, sessionKey } =
+  ({ isPredictionResponse, AnalysisReport, RecentAnalyses, sessionKey,
+     isPredictionAbstention, formatAbstentionMessage, TrialSearch } =
     await import(pathToFileURL(output).href));
 });
 
@@ -44,6 +48,7 @@ const result = {
   source_fetched_at: "2025-01-05T08:29:50Z", source_last_updated: "2025-01-04",
   cache_hit: false, model_id: "weights", preprocessing_id: "preprocessing",
   encoder_id: "encoders", artifact_id: "artifact", source_hash: "source",
+  input_status: "supported", missing_fields: [],
 };
 
 function report(payload) {
@@ -86,9 +91,40 @@ test("missing, malformed and timezone-free timestamps are rejected", () => {
 
 test("legacy browser-dated sessions cannot masquerade as server-dated predictions", () => {
   assert.notEqual(sessionKey, "lucent.analysis-session.v1");
+  assert.notEqual(sessionKey, "lucent.analysis-session.v2");
   const legacy = { ...result, generated_at: undefined, generatedAt: "2025-01-05T08:30:00Z" };
   assert.equal(isPredictionResponse(legacy), false);
   const restored = JSON.parse(JSON.stringify(result));
   assert.equal(isPredictionResponse(restored), true);
   assert.equal(restored.generated_at, result.generated_at);
+});
+
+for (const category of ["unsupported", "insufficient_input", "malformed_upstream"]) {
+  test(`${category} abstention is displayed as unavailable, without an estimate`, () => {
+    const abstention = {
+      status: "abstained", category,
+      message: "This trial cannot currently be evaluated.",
+      reasons: [{ code: "MISSING_BRIEF_SUMMARY", field: "brief_summary", message: "A brief summary is required." }],
+    };
+    assert.equal(isPredictionAbstention(abstention), true);
+    assert.equal(isPredictionResponse(abstention), false);
+    const message = formatAbstentionMessage(abstention);
+    const html = renderToStaticMarkup(createElement(TrialSearch, {
+      nctid: result.nctid, modelVersion: "0.3.0", loading: false, hasResult: false,
+      datasetSize: "33K trials", fieldError: null, serviceError: message,
+      onChange: () => {}, onSubmit: () => {},
+    }));
+    assert.match(html, /Analysis unavailable/);
+    assert.match(html, /This trial cannot currently be evaluated/);
+    assert.match(html, /A brief summary is required/);
+    assert.doesNotMatch(html, /estimate-figure|analysis-report|50\.0%/);
+  });
+}
+
+test("supported missing fields are disclosed while retaining the prediction", () => {
+  const partial = { ...result, input_status: "supported_with_missing", missing_fields: ["phase"] };
+  assert.equal(isPredictionResponse(partial), true);
+  assert.match(report(partial), /Not reported: phase/);
+  assert.equal(isPredictionResponse({ ...result, input_status: undefined }), false);
+  assert.equal(isPredictionResponse({ ...result, status: "abstained" }), false);
 });

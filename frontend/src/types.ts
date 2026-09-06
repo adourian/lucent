@@ -21,6 +21,15 @@ export interface PredictionApiResponse {
   encoder_id: string;
   artifact_id: string;
   source_hash: string;
+  input_status: "supported" | "supported_with_missing";
+  missing_fields: string[];
+}
+
+export interface PredictionAbstention {
+  status: "abstained";
+  category: "unsupported" | "insufficient_input" | "malformed_upstream";
+  message: string;
+  reasons: { code: string; field: string; message: string }[];
 }
 
 /** Displayed predictions retain the backend's creation time and provenance. */

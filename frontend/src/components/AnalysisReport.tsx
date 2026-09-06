@@ -48,6 +48,13 @@ const AnalysisReport = forwardRef<HTMLElement, AnalysisReportProps>(
         )}
 
         <header className="report-header">
+          {result.input_status === "supported_with_missing" && (
+            <p className="report-pending">
+              Not reported: {result.missing_fields.map((field) =>
+                field === "exclusion_criteria" ? "separate exclusion criteria" : field.replace(/_/g, " ")
+              ).join(", ")}.
+            </p>
+          )}
           <div className="report-header__meta">
             <a
               className="report-header__id"

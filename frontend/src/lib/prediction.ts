@@ -1,4 +1,4 @@
-import type { PredictionApiResponse } from "../types";
+import type { PredictionAbstention, PredictionApiResponse } from "../types";
 
 export function isPredictionTimestamp(value: unknown): value is string {
   return typeof value === "string" &&
@@ -10,6 +10,9 @@ export function isPredictionResponse(value: unknown): value is PredictionApiResp
   if (typeof value !== "object" || value === null) return false;
   const result = value as Record<string, unknown>;
   return (
+    result.status !== "abstained" &&
+    (result.input_status === "supported" || result.input_status === "supported_with_missing") &&
+    Array.isArray(result.missing_fields) && result.missing_fields.every((field) => typeof field === "string") &&
     ["nctid", "phase", "sponsor", "title", "status", "diseases", "completion_date",
       "model_id", "preprocessing_id", "encoder_id", "artifact_id", "source_hash"]
       .every((field) => typeof result[field] === "string") &&
@@ -23,4 +26,22 @@ export function isPredictionResponse(value: unknown): value is PredictionApiResp
     (result.source_last_updated === null || typeof result.source_last_updated === "string") &&
     typeof result.cache_hit === "boolean"
   );
+}
+
+export function isPredictionAbstention(value: unknown): value is PredictionAbstention {
+  if (typeof value !== "object" || value === null) return false;
+  const result = value as Record<string, unknown>;
+  return result.status === "abstained" &&
+    ["unsupported", "insufficient_input", "malformed_upstream"].includes(String(result.category)) &&
+    typeof result.message === "string" &&
+    Array.isArray(result.reasons) && result.reasons.length > 0 &&
+    result.reasons.every((reason: unknown) => {
+      if (typeof reason !== "object" || reason === null) return false;
+      const issue = reason as Record<string, unknown>;
+      return ["code", "field", "message"].every((key) => typeof issue[key] === "string");
+    });
+}
+
+export function formatAbstentionMessage(value: PredictionAbstention): string {
+  return `${value.message} ${value.reasons.map((reason) => reason.message).join(" ")}`;
 }

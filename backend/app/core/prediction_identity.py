@@ -6,7 +6,7 @@ from importlib.metadata import version
 from pathlib import Path
 
 
-CACHE_SCHEMA_VERSION = "v1"
+CACHE_SCHEMA_VERSION = "v2"
 PREDICTION_CACHE_TTL_SECONDS = 24 * 60 * 60
 PREDICTION_SAMPLES = 500
 
@@ -56,7 +56,7 @@ def build_artifact_identity(model_path: str, device: str) -> dict[str, str]:
 
     model_id = file_hash(Path(model_path))
     preprocessing_id = payload_hash(source_hashes(
-        "core/parsing.py", "core/preprocessing.py", "core/phases.py",
+        "core/parsing.py", "core/preprocessing.py", "core/phases.py", "core/eligibility.py",
     ))
     encoder_id = payload_hash({
         "encoders": ENCODERS,

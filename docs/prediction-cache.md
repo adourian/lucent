@@ -1,7 +1,8 @@
 # Prediction identity and timestamps
 
-Every prediction request fetches the current ClinicalTrials.gov record before
-checking Redis. An unchanged record can reuse a prediction from the same
+Every prediction request fetches the current ClinicalTrials.gov record and checks
+[prediction eligibility](prediction-eligibility.md) before checking Redis.
+An unchanged eligible record can reuse a prediction from the same
 deployed pipeline for up to 24 hours. A changed record or artifact uses a
 different cache entry.
 
@@ -10,7 +11,7 @@ different cache entry.
 Keys have this structure:
 
 ```text
-prediction:v1:{environment}:{NCTID}:{artifact_id}:{source_hash}
+prediction:v2:{environment}:{NCTID}:{artifact_id}:{source_hash}
 ```
 
 NCTIDs are stripped and uppercased. Hashes use SHA-256. The artifact identity is
@@ -19,10 +20,10 @@ computed once when the predictor starts, using:
 | Component | Identity |
 | --- | --- |
 | Checkpoint | SHA-256 of the loaded checkpoint file (`model_id`) |
-| Preprocessing | Hashes of parsing, preprocessing and phase-encoding source (`preprocessing_id`) |
+| Preprocessing | Hashes of parsing, preprocessing, phase-encoding and eligibility source (`preprocessing_id`) |
 | Encoders/tokenizers | Immutable model repository revisions and embedding-generation source (`encoder_id`) |
 | Inference | Predictor and network source, MC sample count, device, and installed Torch, NumPy, Transformers, Tokenizers and Sentence Transformers versions |
-| Cache contract | Schema version (`v1`) |
+| Cache contract | Schema version (`v2`) |
 
 The encoder revisions used to load models and tokenizers are the same revisions
 included in the identity. Definitions and hash construction live in
@@ -47,6 +48,9 @@ they lack trustworthy timestamps and full artifact/source identity. They remain
 in Redis until removed through normal maintenance; no manual clearing is
 required for correctness. New entries expire automatically.
 
+The former `prediction:v1:...` namespace is also bypassed: its responses predate
+eligibility metadata. The current gate runs even when a matching cache entry exists.
+
 A cache hit must pass response-schema validation and match the requested NCTID,
 source hash and artifact identifiers. Invalid entries are recomputed. Redis
 failures allow fresh inference. A registry failure cannot fall back to an old,
@@ -64,11 +68,12 @@ bypass that check.
 | `source_last_updated` | Registry `lastUpdatePostDateStruct.date`, or null; a registry publication date, not Lucent's analysis time |
 | `cache_hit` | Whether this response reused a Redis prediction |
 | `model_id`, `preprocessing_id`, `encoder_id`, `artifact_id`, `source_hash` | Content/version identifiers described above |
+| `input_status`, `missing_fields` | Eligibility outcome and supported input omissions |
 
 The frontend displays `generated_at` directly in the report and recent analyses,
 including its date and local timezone. It never substitutes browser time.
-Cache hits are labeled “Cached result.” The browser session schema is now `v2`,
-so old sessions with browser-generated timestamps are not restored. An open
+Cache hits are labeled “Cached result.” The browser session schema is now `v3`,
+so old sessions predating backend timestamps or eligibility are not restored. An open
 report remains a snapshot until the user requests another analysis.
 
 ## Checks

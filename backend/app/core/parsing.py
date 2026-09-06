@@ -26,6 +26,7 @@ def parse_trial_json(data: dict):
         "eligibility": eligibility,
         "diseases": diseases,
         "phase": phase,
+        "study_type": protocol.get('designModule', {}).get('studyType', ""),
         "title": title,
         "status": status,
         "enrollment": enrollment,

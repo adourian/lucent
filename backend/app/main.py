@@ -7,13 +7,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import JSONResponse
 import yfinance as yf
 from typing import Literal, Optional, Union
 from pydantic import AwareDatetime, BaseModel
 
-from app.core.parsing import parse_trial_json
-from app.core.preprocessing import preprocess_trial
-from app.core.phases import UnsupportedPhaseError
+from app.core.eligibility import AbstentionResponse, assess_prediction_eligibility
 from app.services.clinicaltrials_api import fetch_nctid_data_async
 from app.core.predict import TrialPredictor
 from app.core.prediction_identity import (
@@ -56,6 +55,8 @@ class PredictionResponse(BaseModel):
     encoder_id: str
     artifact_id: str
     source_hash: str
+    input_status: Literal["supported", "supported_with_missing"]
+    missing_fields: list[str]
 
 
 class PricePoint(BaseModel):
@@ -225,7 +226,10 @@ async def analytics_summary(
     return await read_usage_summary(redis_client, ENV, requested_date)
 
 
-@app.get("/predict/{nctid}", response_model=PredictionResponse)
+@app.get("/predict/{nctid}", response_model=PredictionResponse, responses={
+    422: {"model": AbstentionResponse, "description": "Unsupported or insufficient input"},
+    502: {"description": "Unavailable or malformed registry response"},
+})
 @app.head("/predict/{nctid}", include_in_schema=False)
 async def predict_trial(nctid: str):
 
@@ -237,8 +241,18 @@ async def predict_trial(nctid: str):
     try:
         # Check current evidence before looking up a prediction. Hash the full
         # payload so registry context displayed with a prediction stays current.
-        trial_data = await fetch_nctid_data_async(nctid, app_state["http_client"])
+        try:
+            trial_data = await fetch_nctid_data_async(nctid, app_state["http_client"])
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            trial_data = None  # The central gate reports malformed upstream JSON.
         source_fetched_at = datetime.now(timezone.utc)
+        eligibility = assess_prediction_eligibility(trial_data, nctid)
+        if not eligibility.eligible:
+            return JSONResponse(
+                status_code=502 if eligibility.status == "malformed_upstream" else 422,
+                content=eligibility.abstention().model_dump(),
+            )
+        prepped = eligibility.prepared_trial
         source_hash = payload_hash(trial_data)
         identity = app_state["predictor"].identity
         cache_key = prediction_cache_key(ENV, nctid, identity["artifact_id"], source_hash)
@@ -254,8 +268,6 @@ async def predict_trial(nctid: str):
             except Exception as e:
                 print(f"Prediction cache read error: {e}")
 
-        parsed = parse_trial_json(trial_data)
-        prepped = preprocess_trial(parsed)
         result = await run_in_threadpool(
             app_state["predictor"].predict_with_uncertainty,
             prepped,
@@ -275,10 +287,11 @@ async def predict_trial(nctid: str):
             "completion_date": prepped.get("completion_date", ""),
             "generated_at": datetime.now(timezone.utc),
             "source_fetched_at": source_fetched_at,
-            "source_last_updated": trial_data.get("protocolSection", {}).get(
-                "statusModule", {}).get("lastUpdatePostDateStruct", {}).get("date"),
+            "source_last_updated": prepped.get("source_last_updated"),
             "cache_hit": False,
             "source_hash": source_hash,
+            "input_status": eligibility.status,
+            "missing_fields": eligibility.missing_fields,
             **identity,
             **result
         }).model_dump(mode="json")
@@ -300,8 +313,6 @@ async def predict_trial(nctid: str):
 
         return final_response
     
-    except UnsupportedPhaseError as e:
-        raise HTTPException(status_code=422, detail=str(e)) from e
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 404:
             raise HTTPException(status_code=404, detail=f"Trial '{nctid}' not found on ClinicalTrials.gov.")
