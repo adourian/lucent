@@ -991,5 +991,8 @@ export const sponsorToTicker: Record<string, string> = {
     'Shanghai Hutchison Pharmaceuticals Limited': '2607.HK',
     'Dizal Pharmaceuticals': '688192.SS',
     'CSPC Megalith Biopharmaceutical Co.,Ltd.': '1093.HK',
+    'Insilico Medicine': '3696.HK',
+    'InSilico Medicine Cayman TopCo': '3696.HK',
+    'InSilico Medicine Hong Kong Limited': '3696.HK',
     'Revolution Medicines, Inc.' : 'RVMD',
 }
